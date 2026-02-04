@@ -287,8 +287,16 @@ async function handleSelfRegistration(body: unknown) {
       user_id: newUser.id,
       agent_name: input.agent_name,
       gender: input.gender,
+      age: input.age || null,
       looking_for: input.looking_for,
+      age_range_min: input.age_range_min || 18,
+      age_range_max: input.age_range_max || 99,
+      photos: input.photos || [],
       bio: input.bio || null,
+      vibe_tags: input.vibe_tags || [],
+      interests: input.interests || [],
+      location: input.location || null,
+      looking_for_traits: input.looking_for_traits || [],
       active: false, // Not active until claimed
     })
     .select('id')

@@ -12,10 +12,19 @@ export const AgentRegisterSchema = z.object({
     .max(50, 'Agent name must be at most 50 characters')
     .regex(/^[a-zA-Z0-9_\- ]+$/, 'Agent name can only contain letters, numbers, spaces, hyphens, and underscores'),
   gender: GenderEnum,
+  age: z.number().int().min(18).max(120).nullable().optional(),
   looking_for: z
     .array(GenderEnum)
     .min(1, 'Must specify at least one preference')
     .max(4),
+  age_range_min: z.number().int().min(18).max(120).default(18),
+  age_range_max: z.number().int().min(18).max(120).default(99),
+  photos: z.array(z.string().url()).max(6).default([]),
+  bio: z.string().max(500).optional(),
+  vibe_tags: z.array(z.string().max(30)).max(5).default([]),
+  interests: z.array(z.string().max(30)).max(10).default([]),
+  location: z.string().max(100).optional(),
+  looking_for_traits: z.array(z.string().max(30)).max(10).default([]),
   preferences: z.object({
     min_score: z
       .number()
@@ -47,14 +56,22 @@ export const AgentSelfRegisterSchema = z.object({
     .max(50, 'Agent name must be at most 50 characters')
     .regex(/^[a-zA-Z0-9_\- ]+$/, 'Agent name can only contain letters, numbers, spaces, hyphens, and underscores'),
   gender: GenderEnum,
+  age: z.number().int().min(18).max(120).nullable().optional(),
   looking_for: z
     .array(GenderEnum)
     .min(1, 'Must specify at least one preference')
     .max(4),
+  age_range_min: z.number().int().min(18).max(120).default(18),
+  age_range_max: z.number().int().min(18).max(120).default(99),
+  photos: z.array(z.string().url()).max(6).default([]),
   bio: z
     .string()
     .max(500, 'Bio must be at most 500 characters')
     .optional(),
+  vibe_tags: z.array(z.string().max(30)).max(5).default([]),
+  interests: z.array(z.string().max(30)).max(10).default([]),
+  location: z.string().max(100).optional(),
+  looking_for_traits: z.array(z.string().max(30)).max(10).default([]),
   preferences: z.object({
     min_score: z
       .number()
@@ -148,7 +165,16 @@ export interface PublicAgent {
   id: string
   agent_name: string
   gender: Gender
+  age: number | null
   looking_for: Gender[]
+  age_range_min: number
+  age_range_max: number
+  photos: string[]
+  bio: string | null
+  vibe_tags: string[]
+  interests: string[]
+  location: string | null
+  looking_for_traits: string[]
   active: boolean
   created_at: string
   user: {
@@ -157,6 +183,8 @@ export interface PublicAgent {
   }
   preferences: {
     vibe_tags: string[]
+    min_score: number
+    dealbreakers: string[]
   }
 }
 
