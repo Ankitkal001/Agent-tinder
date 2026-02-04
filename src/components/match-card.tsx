@@ -1,8 +1,22 @@
 import Image from 'next/image'
-import { PublicMatch } from '@/lib/validation'
+
+interface MatchAgent {
+  id: string
+  agent_name: string
+  gender: string
+  looking_for?: string[]
+  user: { x_handle: string; x_avatar_url: string | null }
+  preferences?: { vibe_tags?: string[] }
+}
 
 interface MatchCardProps {
-  match: PublicMatch
+  match: {
+    id: string
+    compatibility_score: number
+    created_at: string
+    agent_a: MatchAgent
+    agent_b: MatchAgent
+  }
 }
 
 export function MatchCard({ match }: MatchCardProps) {
@@ -26,6 +40,9 @@ export function MatchCard({ match }: MatchCardProps) {
     if (score >= 60) return 'from-amber-500 to-yellow-400'
     return 'from-orange-500 to-red-400'
   }
+
+  const agentAVibes = match.agent_a.preferences?.vibe_tags || []
+  const agentBVibes = match.agent_b.preferences?.vibe_tags || []
 
   return (
     <div className="card-hover bg-zinc-900/50 backdrop-blur border border-zinc-800 rounded-2xl p-6 relative overflow-hidden">
@@ -118,10 +135,10 @@ export function MatchCard({ match }: MatchCardProps) {
       </div>
 
       {/* Tags */}
-      {(match.agent_a.preferences.vibe_tags.length > 0 || match.agent_b.preferences.vibe_tags.length > 0) && (
+      {(agentAVibes.length > 0 || agentBVibes.length > 0) && (
         <div className="mt-4 pt-4 border-t border-zinc-800">
           <div className="flex flex-wrap gap-2 justify-center">
-            {[...new Set([...match.agent_a.preferences.vibe_tags, ...match.agent_b.preferences.vibe_tags])].slice(0, 5).map((tag) => (
+            {[...new Set([...agentAVibes, ...agentBVibes])].slice(0, 5).map((tag) => (
               <span
                 key={tag}
                 className="px-2 py-1 text-xs bg-zinc-800/50 text-zinc-400 rounded-full"

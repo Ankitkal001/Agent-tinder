@@ -5,7 +5,7 @@ import { AgentForm } from '@/components/agent-form'
 import { MatchCard } from '@/components/match-card'
 import Image from 'next/image'
 import Link from 'next/link'
-import { PublicMatch, Gender } from '@/lib/validation'
+import { Gender } from '@/lib/validation'
 
 interface AgentWithPrefs {
   id: string
@@ -18,6 +18,27 @@ interface AgentWithPrefs {
     min_score: number
     vibe_tags: string[]
   } | null
+}
+
+// Simplified match type for dashboard
+interface DashboardMatch {
+  id: string
+  compatibility_score: number
+  created_at: string
+  agent_a: {
+    id: string
+    agent_name: string
+    gender: string
+    looking_for: string[]
+    user: { x_handle: string; x_avatar_url: string | null }
+  }
+  agent_b: {
+    id: string
+    agent_name: string
+    gender: string
+    looking_for: string[]
+    user: { x_handle: string; x_avatar_url: string | null }
+  }
 }
 
 export default async function Dashboard() {
@@ -49,7 +70,7 @@ export default async function Dashboard() {
   const userAgent = agentData as AgentWithPrefs | null
 
   // Get user's matches
-  let userMatches: PublicMatch[] = []
+  let userMatches: DashboardMatch[] = []
   if (userAgent) {
     const { data: matchesData } = await supabase
       .from('matches')
@@ -62,14 +83,9 @@ export default async function Dashboard() {
           agent_name,
           gender,
           looking_for,
-          active,
-          created_at,
           users (
             x_handle,
             x_avatar_url
-          ),
-          agent_preferences (
-            vibe_tags
           )
         ),
         agent_b_data:agents!matches_agent_b_fkey (
@@ -77,14 +93,9 @@ export default async function Dashboard() {
           agent_name,
           gender,
           looking_for,
-          active,
-          created_at,
           users (
             x_handle,
             x_avatar_url
-          ),
-          agent_preferences (
-            vibe_tags
           )
         )
       `)
@@ -101,11 +112,9 @@ export default async function Dashboard() {
         const agentA = Array.isArray(agentAData) ? agentAData[0] : agentAData
         const agentB = Array.isArray(agentBData) ? agentBData[0] : agentBData
         
-        // Handle nested arrays for users and preferences
+        // Handle nested arrays for users
         const agentAUsers = Array.isArray(agentA?.users) ? agentA.users[0] : agentA?.users
         const agentBUsers = Array.isArray(agentB?.users) ? agentB.users[0] : agentB?.users
-        const agentAPrefs = Array.isArray(agentA?.agent_preferences) ? agentA.agent_preferences[0] : agentA?.agent_preferences
-        const agentBPrefs = Array.isArray(agentB?.agent_preferences) ? agentB.agent_preferences[0] : agentB?.agent_preferences
 
         return {
           id: match.id,
@@ -116,15 +125,9 @@ export default async function Dashboard() {
             agent_name: agentA?.agent_name || 'Unknown',
             gender: agentA?.gender || 'other',
             looking_for: agentA?.looking_for || [],
-            bio: null,
-            active: agentA?.active || false,
-            created_at: agentA?.created_at || '',
             user: {
               x_handle: agentAUsers?.x_handle || 'unknown',
               x_avatar_url: agentAUsers?.x_avatar_url || null,
-            },
-            preferences: {
-              vibe_tags: agentAPrefs?.vibe_tags || [],
             },
           },
           agent_b: {
@@ -132,15 +135,9 @@ export default async function Dashboard() {
             agent_name: agentB?.agent_name || 'Unknown',
             gender: agentB?.gender || 'other',
             looking_for: agentB?.looking_for || [],
-            bio: null,
-            active: agentB?.active || false,
-            created_at: agentB?.created_at || '',
             user: {
               x_handle: agentBUsers?.x_handle || 'unknown',
               x_avatar_url: agentBUsers?.x_avatar_url || null,
-            },
-            preferences: {
-              vibe_tags: agentBPrefs?.vibe_tags || [],
             },
           },
         }

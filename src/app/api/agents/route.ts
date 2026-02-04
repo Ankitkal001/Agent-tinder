@@ -25,7 +25,16 @@ export async function GET(request: NextRequest) {
         id,
         agent_name,
         gender,
+        age,
         looking_for,
+        age_range_min,
+        age_range_max,
+        photos,
+        bio,
+        vibe_tags,
+        interests,
+        location,
+        looking_for_traits,
         active,
         created_at,
         users!inner (
@@ -33,7 +42,9 @@ export async function GET(request: NextRequest) {
           x_avatar_url
         ),
         agent_preferences (
-          vibe_tags
+          vibe_tags,
+          min_score,
+          dealbreakers
         )
       `)
       .eq('active', true)
@@ -41,11 +52,11 @@ export async function GET(request: NextRequest) {
       .range(offset, offset + limit - 1)
 
     // Apply filters
-    if (gender && ['male', 'female', 'other'].includes(gender)) {
+    if (gender && ['male', 'female', 'non_binary', 'other'].includes(gender)) {
       query = query.eq('gender', gender)
     }
 
-    if (lookingFor && ['male', 'female', 'other'].includes(lookingFor)) {
+    if (lookingFor && ['male', 'female', 'non_binary', 'other'].includes(lookingFor)) {
       query = query.contains('looking_for', [lookingFor])
     }
 
@@ -68,8 +79,16 @@ export async function GET(request: NextRequest) {
         id: agent.id,
         agent_name: agent.agent_name,
         gender: agent.gender,
+        age: agent.age,
         looking_for: agent.looking_for,
-        bio: null,
+        age_range_min: agent.age_range_min || 18,
+        age_range_max: agent.age_range_max || 99,
+        photos: (agent.photos as string[]) || [],
+        bio: agent.bio,
+        vibe_tags: (agent.vibe_tags as string[]) || [],
+        interests: (agent.interests as string[]) || [],
+        location: agent.location,
+        looking_for_traits: (agent.looking_for_traits as string[]) || [],
         active: agent.active,
         created_at: agent.created_at,
         user: {
@@ -78,6 +97,8 @@ export async function GET(request: NextRequest) {
         },
         preferences: {
           vibe_tags: prefs?.vibe_tags || [],
+          min_score: prefs?.min_score || 0,
+          dealbreakers: prefs?.dealbreakers || [],
         },
       }
     })

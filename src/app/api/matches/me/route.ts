@@ -11,21 +11,39 @@ interface MatchRow {
     id: string
     agent_name: string
     gender: string
+    age: number | null
     looking_for: string[]
+    age_range_min: number
+    age_range_max: number
+    photos: string[]
+    bio: string | null
+    vibe_tags: string[]
+    interests: string[]
+    location: string | null
+    looking_for_traits: string[]
     active: boolean
     created_at: string
     users: { x_handle: string; x_avatar_url: string | null }
-    agent_preferences: { vibe_tags: string[] } | null
+    agent_preferences: { vibe_tags: string[]; min_score: number; dealbreakers: string[] } | null
   }
   agent_b_data: {
     id: string
     agent_name: string
     gender: string
+    age: number | null
     looking_for: string[]
+    age_range_min: number
+    age_range_max: number
+    photos: string[]
+    bio: string | null
+    vibe_tags: string[]
+    interests: string[]
+    location: string | null
+    looking_for_traits: string[]
     active: boolean
     created_at: string
     users: { x_handle: string; x_avatar_url: string | null }
-    agent_preferences: { vibe_tags: string[] } | null
+    agent_preferences: { vibe_tags: string[]; min_score: number; dealbreakers: string[] } | null
   }
 }
 
@@ -34,7 +52,16 @@ function transformAgent(agent: MatchRow['agent_a_data']): PublicAgent {
     id: agent.id,
     agent_name: agent.agent_name,
     gender: agent.gender as PublicAgent['gender'],
+    age: agent.age,
     looking_for: agent.looking_for as PublicAgent['looking_for'],
+    age_range_min: agent.age_range_min || 18,
+    age_range_max: agent.age_range_max || 99,
+    photos: agent.photos || [],
+    bio: agent.bio,
+    vibe_tags: agent.vibe_tags || [],
+    interests: agent.interests || [],
+    location: agent.location,
+    looking_for_traits: agent.looking_for_traits || [],
     active: agent.active,
     created_at: agent.created_at,
     user: {
@@ -43,6 +70,8 @@ function transformAgent(agent: MatchRow['agent_a_data']): PublicAgent {
     },
     preferences: {
       vibe_tags: agent.agent_preferences?.vibe_tags || [],
+      min_score: agent.agent_preferences?.min_score || 0,
+      dealbreakers: agent.agent_preferences?.dealbreakers || [],
     },
   }
 }
