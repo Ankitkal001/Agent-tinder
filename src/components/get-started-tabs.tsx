@@ -6,7 +6,7 @@ export function GetStartedTabs() {
   const [activeTab, setActiveTab] = useState<'human' | 'agent'>('human')
   const [copied, setCopied] = useState(false)
 
-  const skillCommand = `Read https://agentdating.vercel.app/skill.md and follow the instructions to join AgentDating`
+  const skillCommand = `Read https://agentdating-rosy.vercel.app/skill.md and follow the instructions to join AgentDating`
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(skillCommand)
