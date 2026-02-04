@@ -94,50 +94,53 @@ export default async function Dashboard() {
 
     if (matchesData) {
       userMatches = matchesData.map((match) => {
-        const agentA = match.agent_a_data as {
-          id: string
-          agent_name: string
-          gender: Gender
-          looking_for: Gender[]
-          active: boolean
-          created_at: string
-          users: { x_handle: string; x_avatar_url: string | null }
-          agent_preferences: { vibe_tags: string[] } | null
-        }
-        const agentB = match.agent_b_data as typeof agentA
+        const agentAData = match.agent_a_data
+        const agentBData = match.agent_b_data
+        
+        // Handle array or single object from Supabase
+        const agentA = Array.isArray(agentAData) ? agentAData[0] : agentAData
+        const agentB = Array.isArray(agentBData) ? agentBData[0] : agentBData
+        
+        // Handle nested arrays for users and preferences
+        const agentAUsers = Array.isArray(agentA?.users) ? agentA.users[0] : agentA?.users
+        const agentBUsers = Array.isArray(agentB?.users) ? agentB.users[0] : agentB?.users
+        const agentAPrefs = Array.isArray(agentA?.agent_preferences) ? agentA.agent_preferences[0] : agentA?.agent_preferences
+        const agentBPrefs = Array.isArray(agentB?.agent_preferences) ? agentB.agent_preferences[0] : agentB?.agent_preferences
 
         return {
           id: match.id,
           compatibility_score: match.compatibility_score,
           created_at: match.created_at,
           agent_a: {
-            id: agentA.id,
-            agent_name: agentA.agent_name,
-            gender: agentA.gender,
-            looking_for: agentA.looking_for,
-            active: agentA.active,
-            created_at: agentA.created_at,
+            id: agentA?.id || '',
+            agent_name: agentA?.agent_name || 'Unknown',
+            gender: agentA?.gender || 'other',
+            looking_for: agentA?.looking_for || [],
+            bio: null,
+            active: agentA?.active || false,
+            created_at: agentA?.created_at || '',
             user: {
-              x_handle: agentA.users.x_handle,
-              x_avatar_url: agentA.users.x_avatar_url,
+              x_handle: agentAUsers?.x_handle || 'unknown',
+              x_avatar_url: agentAUsers?.x_avatar_url || null,
             },
             preferences: {
-              vibe_tags: agentA.agent_preferences?.vibe_tags || [],
+              vibe_tags: agentAPrefs?.vibe_tags || [],
             },
           },
           agent_b: {
-            id: agentB.id,
-            agent_name: agentB.agent_name,
-            gender: agentB.gender,
-            looking_for: agentB.looking_for,
-            active: agentB.active,
-            created_at: agentB.created_at,
+            id: agentB?.id || '',
+            agent_name: agentB?.agent_name || 'Unknown',
+            gender: agentB?.gender || 'other',
+            looking_for: agentB?.looking_for || [],
+            bio: null,
+            active: agentB?.active || false,
+            created_at: agentB?.created_at || '',
             user: {
-              x_handle: agentB.users.x_handle,
-              x_avatar_url: agentB.users.x_avatar_url,
+              x_handle: agentBUsers?.x_handle || 'unknown',
+              x_avatar_url: agentBUsers?.x_avatar_url || null,
             },
             preferences: {
-              vibe_tags: agentB.agent_preferences?.vibe_tags || [],
+              vibe_tags: agentBPrefs?.vibe_tags || [],
             },
           },
         }

@@ -22,6 +22,9 @@ export const ErrorCodes = {
   // Server errors
   INTERNAL_ERROR: 'INTERNAL_ERROR',
   DATABASE_ERROR: 'DATABASE_ERROR',
+  
+  // Conflict errors
+  CONFLICT: 'CONFLICT',
 } as const
 
 export type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes]
