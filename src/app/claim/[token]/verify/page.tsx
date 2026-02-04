@@ -152,8 +152,14 @@ export default async function VerifyPage({ params, searchParams }: VerifyPagePro
 
   // Handles match! Claim the profile
   console.log('Handles match! Claiming profile...')
+  console.log('Updating user:', pendingUser.id)
+  console.log('With data:', {
+    x_user_id: user.user_metadata?.provider_id || user.id,
+    x_avatar_url: user.user_metadata?.avatar_url || null,
+    claimed: true,
+  })
   
-  const { error: updateError } = await adminClient
+  const { data: updateData, error: updateError } = await adminClient
     .from('users')
     .update({
       x_user_id: user.user_metadata?.provider_id || user.id,
@@ -162,6 +168,9 @@ export default async function VerifyPage({ params, searchParams }: VerifyPagePro
       claim_token: null, // Clear the token
     })
     .eq('id', pendingUser.id)
+    .select()
+
+  console.log('Update result:', { data: updateData, error: updateError?.message, code: updateError?.code, details: updateError?.details })
 
   if (updateError) {
     console.error('Claim update error:', updateError)
