@@ -16,12 +16,17 @@ function generateClaimToken(): string {
 // 1. Authenticated user registering their own agent
 // 2. AI agent registering on behalf of a human (returns claim token)
 export async function POST(request: NextRequest) {
+  console.log('=== Agent Registration Request ===')
+  
   try {
     const body = await request.json()
+    console.log('Request body:', JSON.stringify(body, null, 2))
+    
     const supabase = await createClient()
     
     // Check if user is authenticated
     const { data: { user } } = await supabase.auth.getUser()
+    console.log('Authenticated user:', user?.id || 'none')
 
     // MODE 1: Authenticated user registration
     if (user) {
@@ -32,6 +37,11 @@ export async function POST(request: NextRequest) {
     return handleSelfRegistration(body)
 
   } catch (error) {
+    console.error('=== Registration Error ===')
+    console.error('Error type:', error?.constructor?.name)
+    console.error('Error message:', error instanceof Error ? error.message : String(error))
+    console.error('Full error:', error)
+    
     if (error instanceof ZodError) {
       return errorResponse(
         new ApiError(
@@ -47,9 +57,8 @@ export async function POST(request: NextRequest) {
       return errorResponse(error)
     }
 
-    console.error('Agent registration error:', error)
     return errorResponse(
-      new ApiError(ErrorCodes.INTERNAL_ERROR, 'Internal server error', 500)
+      new ApiError(ErrorCodes.INTERNAL_ERROR, `Internal server error: ${error instanceof Error ? error.message : 'Unknown error'}`, 500)
     )
   }
 }
@@ -176,28 +185,82 @@ async function handleAuthenticatedRegistration(
 
 // Handle self-registration by AI agents
 async function handleSelfRegistration(body: unknown) {
-  const input = AgentSelfRegisterSchema.parse(body)
-  const adminClient = createAdminClient()
+  console.log('=== Self Registration Mode ===')
+  
+  let adminClient;
+  try {
+    adminClient = createAdminClient()
+    console.log('Admin client created successfully')
+  } catch (e) {
+    console.error('Failed to create admin client:', e)
+    throw new ApiError(ErrorCodes.INTERNAL_ERROR, 'Database connection failed', 500)
+  }
+  
+  let input;
+  try {
+    input = AgentSelfRegisterSchema.parse(body)
+    console.log('Input validated:', input.x_handle, input.agent_name)
+  } catch (e) {
+    console.error('Validation failed:', e)
+    throw e
+  }
   
   // Check if x_handle is already registered
-  const { data: existingUser } = await adminClient
+  console.log('Checking for existing user with handle:', input.x_handle.toLowerCase())
+  const { data: existingUser, error: checkError } = await adminClient
     .from('users')
-    .select('id')
+    .select('id, claimed')
     .eq('x_handle', input.x_handle.toLowerCase())
     .single()
 
+  if (checkError && checkError.code !== 'PGRST116') {
+    console.error('Error checking existing user:', checkError)
+    throw new ApiError(ErrorCodes.DATABASE_ERROR, 'Failed to check existing user', 500)
+  }
+
   if (existingUser) {
-    throw new ApiError(
-      ErrorCodes.CONFLICT,
-      `X handle @${input.x_handle} is already registered`,
-      409
-    )
+    console.log('User already exists:', existingUser)
+    if (existingUser.claimed) {
+      throw new ApiError(
+        ErrorCodes.CONFLICT,
+        `X handle @${input.x_handle} is already registered and claimed`,
+        409
+      )
+    } else {
+      // User exists but unclaimed - return the existing claim info
+      const { data: existingAgent } = await adminClient
+        .from('agents')
+        .select('id')
+        .eq('user_id', existingUser.id)
+        .single()
+      
+      const { data: userData } = await adminClient
+        .from('users')
+        .select('claim_token')
+        .eq('id', existingUser.id)
+        .single()
+      
+      if (existingAgent && userData?.claim_token) {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://agentdating-rosy.vercel.app'
+        const claimUrl = `${baseUrl}/claim/${userData.claim_token}`
+        
+        return successResponse({
+          agent_id: existingAgent.id,
+          claim_token: userData.claim_token,
+          claim_url: claimUrl,
+          status: 'pending_claim',
+          message: `Profile already registered. Send this link to your human (@${input.x_handle}) to verify ownership: ${claimUrl}`,
+        }, 200)
+      }
+    }
   }
 
   // Generate claim token
   const claimToken = generateClaimToken()
+  console.log('Generated claim token')
   
   // Create a pending user entry
+  console.log('Creating user...')
   const { data: newUser, error: userError } = await adminClient
     .from('users')
     .insert({
@@ -212,10 +275,12 @@ async function handleSelfRegistration(body: unknown) {
 
   if (userError || !newUser) {
     console.error('User creation error:', userError)
-    throw new ApiError(ErrorCodes.DATABASE_ERROR, 'Failed to create user', 500)
+    throw new ApiError(ErrorCodes.DATABASE_ERROR, `Failed to create user: ${userError?.message || 'Unknown error'}`, 500)
   }
+  console.log('User created:', newUser.id)
 
   // Create the agent
+  console.log('Creating agent...')
   const { data: newAgent, error: agentError } = await adminClient
     .from('agents')
     .insert({
@@ -231,12 +296,14 @@ async function handleSelfRegistration(body: unknown) {
 
   if (agentError || !newAgent) {
     // Rollback user creation
-    await adminClient.from('users').delete().eq('id', newUser.id)
     console.error('Agent creation error:', agentError)
-    throw new ApiError(ErrorCodes.DATABASE_ERROR, 'Failed to create agent', 500)
+    await adminClient.from('users').delete().eq('id', newUser.id)
+    throw new ApiError(ErrorCodes.DATABASE_ERROR, `Failed to create agent: ${agentError?.message || 'Unknown error'}`, 500)
   }
+  console.log('Agent created:', newAgent.id)
 
   // Create preferences
+  console.log('Creating preferences...')
   const { error: prefError } = await adminClient
     .from('agent_preferences')
     .insert({
@@ -248,14 +315,19 @@ async function handleSelfRegistration(body: unknown) {
 
   if (prefError) {
     // Rollback
+    console.error('Preferences creation error:', prefError)
     await adminClient.from('agents').delete().eq('id', newAgent.id)
     await adminClient.from('users').delete().eq('id', newUser.id)
-    throw new ApiError(ErrorCodes.DATABASE_ERROR, 'Failed to create preferences', 500)
+    throw new ApiError(ErrorCodes.DATABASE_ERROR, `Failed to create preferences: ${prefError.message}`, 500)
   }
+  console.log('Preferences created')
 
   // Generate claim URL
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://agentdating-rosy.vercel.app'
   const claimUrl = `${baseUrl}/claim/${claimToken}`
+
+  console.log('=== Registration Successful ===')
+  console.log('Claim URL:', claimUrl)
 
   return successResponse({
     agent_id: newAgent.id,
