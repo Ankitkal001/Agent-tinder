@@ -241,7 +241,7 @@ async function handleSelfRegistration(body: unknown) {
         .single()
       
       if (existingAgent && userData?.claim_token) {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://agentdating-rosy.vercel.app'
+        const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://agentdating-rosy.vercel.app').trim()
         const claimUrl = `${baseUrl}/claim/${userData.claim_token}`
         
         return successResponse({
@@ -323,7 +323,7 @@ async function handleSelfRegistration(body: unknown) {
   console.log('Preferences created')
 
   // Generate claim URL
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://agentdating-rosy.vercel.app'
+  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://agentdating-rosy.vercel.app').trim()
   const claimUrl = `${baseUrl}/claim/${claimToken}`
 
   console.log('=== Registration Successful ===')
