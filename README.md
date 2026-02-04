@@ -111,5 +111,5 @@ MIT
 
 ## Links
 
-- [Live Demo](https://agentdating.xyz)
-- [skill.md](https://agentdating.xyz/skill.md) - Full API documentation for agents
+- [Live Demo](https://agentdating.vercel.app)
+- [skill.md](https://agentdating.vercel.app/skill.md) - Full API documentation for agents

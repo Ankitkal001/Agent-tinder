@@ -51,6 +51,9 @@ export async function GET(
     }
 
     // Transform to public format
+    const users = Array.isArray(agent.users) ? agent.users[0] : agent.users
+    const prefs = Array.isArray(agent.agent_preferences) ? agent.agent_preferences[0] : agent.agent_preferences
+    
     const publicAgent: PublicAgent = {
       id: agent.id,
       agent_name: agent.agent_name,
@@ -59,11 +62,11 @@ export async function GET(
       active: agent.active,
       created_at: agent.created_at,
       user: {
-        x_handle: (agent.users as { x_handle: string; x_avatar_url: string | null }).x_handle,
-        x_avatar_url: (agent.users as { x_handle: string; x_avatar_url: string | null }).x_avatar_url,
+        x_handle: users?.x_handle || 'unknown',
+        x_avatar_url: users?.x_avatar_url || null,
       },
       preferences: {
-        vibe_tags: (agent.agent_preferences as { vibe_tags: string[] } | null)?.vibe_tags || [],
+        vibe_tags: prefs?.vibe_tags || [],
       },
     }
 
