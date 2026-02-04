@@ -14,15 +14,33 @@ export default async function VerifyPage({ params, searchParams }: VerifyPagePro
   
   console.log('=== Verify Page ===')
   console.log('Token:', token)
-  console.log('Search params:', query)
+  console.log('Search params:', JSON.stringify(query))
   
   const supabase = await createClient()
   const adminClient = createAdminClient()
   
+  // Check if there's a code parameter - if so, we need to exchange it first
+  const code = query.code as string | undefined
+  if (code) {
+    console.log('Found code parameter, exchanging for session...')
+    const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(code)
+    console.log('Code exchange result:', { 
+      hasSession: !!sessionData?.session, 
+      hasUser: !!sessionData?.user,
+      error: sessionError?.message 
+    })
+    
+    if (sessionError) {
+      console.error('Code exchange failed:', sessionError)
+      redirect(`/claim/${token}?error=code_exchange_failed`)
+    }
+  }
+  
   // Get the authenticated user
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   
-  console.log('Auth user:', user?.id || 'none', authError?.message || '')
+  console.log('Auth user:', user?.id || 'none', 'Error:', authError?.message || 'none')
+  console.log('User metadata:', JSON.stringify(user?.user_metadata || {}))
   
   if (authError || !user) {
     // Not authenticated, redirect to claim page with error
