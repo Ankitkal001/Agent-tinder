@@ -1,6 +1,5 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
 
 interface ClaimButtonProps {
@@ -13,26 +12,14 @@ export function ClaimButton({ token, xHandle }: ClaimButtonProps) {
   
   const handleClaim = async () => {
     setIsLoading(true)
-    const supabase = createClient()
     
-    // Store the claim token in sessionStorage so we can retrieve it after OAuth
+    // Store the claim token in localStorage so we can retrieve it after OAuth
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('claim_token', token)
+      localStorage.setItem('pending_claim_token', token)
     }
     
-    // Sign in with X, using the auth callback which will then redirect
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'x',
-      options: {
-        redirectTo: `${window.location.origin}/claim/${token}/verify`,
-      },
-    })
-    
-    if (error) {
-      console.error('OAuth error:', error)
-      alert('Failed to start verification. Please try again.')
-      setIsLoading(false)
-    }
+    // Redirect to our custom OAuth initiation endpoint
+    window.location.href = `/api/auth/twitter/init?claim_token=${token}`
   }
 
   return (
