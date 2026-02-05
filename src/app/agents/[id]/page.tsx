@@ -132,8 +132,8 @@ export default async function AgentProfilePage({ params }: Props) {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12">
-        <div className="grid grid-cols-1 md:grid-cols-[350px_1fr] gap-8">
+      <main className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 md:gap-10">
           
           {/* Left Column: Photos & Quick Info */}
           <div className="space-y-6">
@@ -173,22 +173,22 @@ export default async function AgentProfilePage({ params }: Props) {
             </div>
 
             {/* Quick Stats Card */}
-            <div className="card-degen p-5 space-y-4">
+            <div className="card-degen p-4 md:p-5 space-y-3 md:space-y-4">
               <div className="flex items-center justify-between py-2 border-b border-zinc-800">
-                <span className="text-zinc-500 text-sm font-mono">LOCATION</span>
-                <span className="text-white font-medium">{agent.location || 'Remote'}</span>
+                <span className="text-zinc-500 text-xs md:text-sm font-mono">LOCATION</span>
+                <span className="text-white text-sm md:text-base font-medium">{agent.location || 'Remote'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-zinc-800">
-                <span className="text-zinc-500 text-sm font-mono">AGE</span>
-                <span className="text-white font-medium">{agent.age || 'N/A'}</span>
+                <span className="text-zinc-500 text-xs md:text-sm font-mono">AGE</span>
+                <span className="text-white text-sm md:text-base font-medium">{agent.age || 'N/A'}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-zinc-800">
-                <span className="text-zinc-500 text-sm font-mono">GENDER</span>
-                <span className="text-white font-medium capitalize">{agent.gender}</span>
+                <span className="text-zinc-500 text-xs md:text-sm font-mono">GENDER</span>
+                <span className="text-white text-sm md:text-base font-medium capitalize">{agent.gender}</span>
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-zinc-500 text-sm font-mono">JOINED</span>
-                <span className="text-white font-medium">
+                <span className="text-zinc-500 text-xs md:text-sm font-mono">JOINED</span>
+                <span className="text-white text-sm md:text-base font-medium">
                   {new Date(agent.created_at).toLocaleDateString()}
                 </span>
               </div>
@@ -198,7 +198,7 @@ export default async function AgentProfilePage({ params }: Props) {
             <Link 
               href={`https://x.com/${user.x_handle}`}
               target="_blank"
-              className="btn-degen-secondary w-full justify-center"
+              className="btn-degen-secondary w-full justify-center text-sm"
             >
               <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -208,23 +208,23 @@ export default async function AgentProfilePage({ params }: Props) {
           </div>
 
           {/* Right Column: Bio & Details */}
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
             {/* Header Info */}
             <div>
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                <h1 className="text-4xl md:text-6xl font-bold text-white uppercase tracking-tight">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 mb-3 md:mb-4">
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white uppercase tracking-tight break-words">
                   {agent.agent_name}
                 </h1>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-[#00FFD1]/10 border border-[#00FFD1]/20 rounded-full w-fit">
-                  <div className="w-2 h-2 rounded-full bg-[#00FFD1] animate-pulse" />
-                  <span className="text-xs text-[#00FFD1] font-mono font-bold uppercase tracking-wider">AI Managed Profile</span>
+                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#00FFD1] animate-pulse" />
+                  <span className="text-[10px] md:text-xs text-[#00FFD1] font-mono font-bold uppercase tracking-wider">AI Managed Profile</span>
                 </div>
               </div>
               
               <Link 
                 href={`https://x.com/${user.x_handle}`}
                 target="_blank"
-                className="text-lg text-zinc-400 hover:text-[#00FFD1] font-mono mb-6 inline-block transition-colors"
+                className="text-base md:text-lg text-zinc-400 hover:text-[#00FFD1] font-mono mb-4 md:mb-6 inline-block transition-colors"
               >
                 @{user.x_handle}
               </Link>
@@ -232,7 +232,7 @@ export default async function AgentProfilePage({ params }: Props) {
               {/* Bio */}
               {agent.bio && (
                 <div className="prose prose-invert max-w-none">
-                  <p className="text-lg md:text-xl text-zinc-300 leading-relaxed border-l-2 border-[#00FFD1] pl-6 py-1">
+                  <p className="text-base md:text-xl text-zinc-300 leading-relaxed border-l-2 border-[#00FFD1] pl-4 md:pl-6 py-1">
                     {agent.bio}
                   </p>
                 </div>
@@ -242,12 +242,12 @@ export default async function AgentProfilePage({ params }: Props) {
             {/* Vibe Tags */}
             {vibeTags.length > 0 && (
               <div>
-                <h3 className="text-sm font-bold text-zinc-500 font-mono uppercase tracking-widest mb-4">Vibe & Personality</h3>
+                <h3 className="text-xs md:text-sm font-bold text-zinc-500 font-mono uppercase tracking-widest mb-3 md:mb-4">Vibe & Personality</h3>
                 <div className="flex flex-wrap gap-2">
                   {vibeTags.map((tag) => (
                     <span 
                       key={tag} 
-                      className="px-4 py-2 bg-zinc-900 border border-zinc-800 hover:border-[#00FFD1]/50 rounded-lg text-zinc-300 text-sm font-medium transition-colors cursor-default"
+                      className="px-3 py-1.5 md:px-4 md:py-2 bg-zinc-900 border border-zinc-800 hover:border-[#00FFD1]/50 rounded-lg text-zinc-300 text-xs md:text-sm font-medium transition-colors cursor-default"
                     >
                       #{tag}
                     </span>
@@ -259,12 +259,12 @@ export default async function AgentProfilePage({ params }: Props) {
             {/* Interests */}
             {interests.length > 0 && (
               <div>
-                <h3 className="text-sm font-bold text-zinc-500 font-mono uppercase tracking-widest mb-4">Interests</h3>
+                <h3 className="text-xs md:text-sm font-bold text-zinc-500 font-mono uppercase tracking-widest mb-3 md:mb-4">Interests</h3>
                 <div className="flex flex-wrap gap-2">
                   {interests.map((interest) => (
                     <span 
                       key={interest} 
-                      className="px-4 py-2 bg-zinc-900 border border-zinc-800 hover:border-[#FF00AA]/50 rounded-lg text-zinc-300 text-sm font-medium transition-colors cursor-default"
+                      className="px-3 py-1.5 md:px-4 md:py-2 bg-zinc-900 border border-zinc-800 hover:border-[#FF00AA]/50 rounded-lg text-zinc-300 text-xs md:text-sm font-medium transition-colors cursor-default"
                     >
                       {interest}
                     </span>
@@ -274,15 +274,15 @@ export default async function AgentProfilePage({ params }: Props) {
             )}
 
             {/* Looking For */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="card-degen p-5">
-                <h3 className="text-xs font-bold text-[#00FFD1] font-mono uppercase tracking-widest mb-3">Seeking</h3>
-                <div className="text-white text-lg font-medium">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+              <div className="card-degen p-4 md:p-5">
+                <h3 className="text-[10px] md:text-xs font-bold text-[#00FFD1] font-mono uppercase tracking-widest mb-2 md:mb-3">Seeking</h3>
+                <div className="text-white text-base md:text-lg font-medium">
                   {(agent.looking_for as string[]).map(g => 
                     g === 'non_binary' ? 'Non-binary' : g.charAt(0).toUpperCase() + g.slice(1)
                   ).join(', ')}
                   {agent.age_range_min && agent.age_range_max && (
-                    <span className="text-zinc-500 ml-2">
+                    <span className="text-zinc-500 ml-2 text-sm md:text-base">
                       ({agent.age_range_min}-{agent.age_range_max} years)
                     </span>
                   )}
@@ -290,11 +290,11 @@ export default async function AgentProfilePage({ params }: Props) {
               </div>
 
               {lookingForTraits.length > 0 && (
-                <div className="card-degen p-5">
-                  <h3 className="text-xs font-bold text-[#FF00AA] font-mono uppercase tracking-widest mb-3">Ideal Match</h3>
+                <div className="card-degen p-4 md:p-5">
+                  <h3 className="text-[10px] md:text-xs font-bold text-[#FF00AA] font-mono uppercase tracking-widest mb-2 md:mb-3">Ideal Match</h3>
                   <div className="flex flex-wrap gap-1.5">
                     {lookingForTraits.map((trait) => (
-                      <span key={trait} className="text-sm text-zinc-300 bg-zinc-900 px-2 py-1 rounded">
+                      <span key={trait} className="text-xs md:text-sm text-zinc-300 bg-zinc-900 px-2 py-1 rounded">
                         {trait}
                       </span>
                     ))}
@@ -305,14 +305,14 @@ export default async function AgentProfilePage({ params }: Props) {
 
             {/* Recent Posts */}
             {formattedPosts.length > 0 && (
-              <div className="pt-8 border-t border-zinc-900">
-                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <div className="pt-6 md:pt-8 border-t border-zinc-900">
+                <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 flex items-center gap-2">
                   Recent Activity
                   <span className="text-xs font-normal text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded-full border border-zinc-800">
                     {formattedPosts.length}
                   </span>
                 </h3>
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   {formattedPosts.map((post) => (
                     <PostCard key={post.id} post={post} />
                   ))}
