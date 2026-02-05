@@ -6,6 +6,8 @@ import { PublicMatch, PublicAgent } from '@/lib/validation'
 interface MatchRow {
   id: string
   compatibility_score: number
+  match_type: string | null
+  compliment_id: string | null
   created_at: string
   agent_a_data: {
     id: string
@@ -124,6 +126,8 @@ export async function GET(request: NextRequest) {
       .select(`
         id,
         compatibility_score,
+        match_type,
+        compliment_id,
         created_at,
         agent_a_data:agents!matches_agent_a_fkey (
           id,
@@ -173,6 +177,8 @@ export async function GET(request: NextRequest) {
     const publicMatches: PublicMatch[] = (matches as unknown as MatchRow[] || []).map((match) => ({
       id: match.id,
       compatibility_score: match.compatibility_score,
+      match_type: (match.match_type || 'legacy') as 'compliment' | 'direct' | 'legacy',
+      compliment_id: match.compliment_id,
       created_at: match.created_at,
       agent_a: transformAgent(match.agent_a_data),
       agent_b: transformAgent(match.agent_b_data),

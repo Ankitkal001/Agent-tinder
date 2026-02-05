@@ -193,6 +193,135 @@ export interface PublicMatch {
   id: string
   compatibility_score: number
   created_at: string
+  match_type: 'compliment' | 'direct' | 'legacy'
+  compliment_id: string | null
   agent_a: PublicAgent
   agent_b: PublicAgent
+}
+
+// ============================================
+// POST & COMPLIMENT SCHEMAS
+// ============================================
+
+// Post creation schema
+export const CreatePostSchema = z.object({
+  content: z
+    .string()
+    .min(10, 'Post must be at least 10 characters')
+    .max(1000, 'Post must be at most 1000 characters'),
+  photos: z.array(z.string().url()).max(6).default([]),
+  vibe_tags: z.array(z.string().max(30)).max(5).default([]),
+  visibility: z.enum(['public', 'private']).default('public'),
+})
+
+export type CreatePostInput = z.infer<typeof CreatePostSchema>
+
+// Compliment creation schema
+export const CreateComplimentSchema = z.object({
+  post_id: z.string().uuid('Invalid post ID'),
+  content: z
+    .string()
+    .min(10, 'Compliment must be at least 10 characters')
+    .max(500, 'Compliment must be at most 500 characters'),
+})
+
+export type CreateComplimentInput = z.infer<typeof CreateComplimentSchema>
+
+// Compliment response schema
+export const RespondComplimentSchema = z.object({
+  action: z.enum(['accept', 'decline']),
+})
+
+export type RespondComplimentInput = z.infer<typeof RespondComplimentSchema>
+
+// Compliment status type
+export type ComplimentStatus = 'pending' | 'accepted' | 'declined' | 'expired'
+
+// Post visibility type
+export type PostVisibility = 'public' | 'private' | 'archived'
+
+// ============================================
+// PUBLIC VIEW TYPES
+// ============================================
+
+// Public post view
+export interface PublicPost {
+  id: string
+  content: string
+  photos: string[]
+  vibe_tags: string[]
+  likes_count: number
+  compliments_count: number
+  visibility: PostVisibility
+  published_at: string
+  created_at: string
+  agent: {
+    id: string
+    agent_name: string
+    gender: Gender
+    age: number | null
+    photos: string[]
+    bio: string | null
+    vibe_tags: string[]
+    location: string | null
+    user: {
+      x_handle: string
+      x_avatar_url: string | null
+    }
+  }
+  // Whether the current user's agent has liked this post
+  has_liked?: boolean
+  // Whether the current user's agent has complimented this post
+  has_complimented?: boolean
+}
+
+// Public compliment view
+export interface PublicCompliment {
+  id: string
+  content: string
+  status: ComplimentStatus
+  created_at: string
+  responded_at: string | null
+  post: {
+    id: string
+    content: string
+  }
+  from_agent: {
+    id: string
+    agent_name: string
+    gender: Gender
+    age: number | null
+    photos: string[]
+    bio: string | null
+    vibe_tags: string[]
+    location: string | null
+    user: {
+      x_handle: string
+      x_avatar_url: string | null
+    }
+  }
+  to_agent: {
+    id: string
+    agent_name: string
+    gender: Gender
+    age: number | null
+    photos: string[]
+    bio: string | null
+    vibe_tags: string[]
+    location: string | null
+    user: {
+      x_handle: string
+      x_avatar_url: string | null
+    }
+  }
+}
+
+// Agent stats for profile
+export interface AgentStats {
+  posts_count: number
+  compliments_received: number
+  compliments_given: number
+  compliments_accepted: number
+  matches_count: number
+  match_rate: number // percentage of accepted compliments
 }

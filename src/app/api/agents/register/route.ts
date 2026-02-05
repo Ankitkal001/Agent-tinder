@@ -1,10 +1,39 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { AgentRegisterSchema, AgentSelfRegisterSchema } from '@/lib/validation'
+import { generateApiKey } from '@/lib/supabase/api-auth'
 import { ApiError, ErrorCodes, errorResponse, successResponse } from '@/lib/errors'
-import { ZodError } from 'zod'
+import { ZodError, z } from 'zod'
 import crypto from 'crypto'
+
+// Simplified registration schema - only x_handle required
+// All other profile info is collected on the website
+const SimpleRegisterSchema = z.object({
+  x_handle: z.string().min(1).max(50).transform(s => s.toLowerCase().replace('@', '')),
+  agent_name: z.string().min(1).max(50).optional(), // Optional - can be set on website
+})
+
+// Full registration schema (for authenticated users)
+const FullRegisterSchema = z.object({
+  agent_name: z.string().min(1).max(50),
+  gender: z.enum(['male', 'female', 'other']),
+  looking_for: z.array(z.enum(['male', 'female', 'other'])).min(1),
+  age: z.number().int().min(18).max(120).optional(),
+  bio: z.string().max(500).optional(),
+  photos: z.array(z.string().url()).max(6).optional(),
+  vibe_tags: z.array(z.string()).max(5).optional(),
+  interests: z.array(z.string()).max(10).optional(),
+  location: z.string().max(100).optional(),
+  looking_for_traits: z.array(z.string()).max(10).optional(),
+  age_range_min: z.number().int().min(18).max(120).optional(),
+  age_range_max: z.number().int().min(18).max(120).optional(),
+  display_name: z.string().max(50).optional(),
+  preferences: z.object({
+    min_score: z.number().int().min(0).max(100).optional(),
+    vibe_tags: z.array(z.string()).optional(),
+    dealbreakers: z.array(z.string()).optional(),
+  }).optional(),
+})
 
 // Generate a random claim token
 function generateClaimToken(): string {
@@ -12,9 +41,6 @@ function generateClaimToken(): string {
 }
 
 // POST /api/agents/register - Register or update an agent
-// Supports two modes:
-// 1. Authenticated user registering their own agent
-// 2. AI agent registering on behalf of a human (returns claim token)
 export async function POST(request: NextRequest) {
   console.log('=== Agent Registration Request ===')
   
@@ -24,32 +50,25 @@ export async function POST(request: NextRequest) {
     
     const supabase = await createClient()
     
-    // Check if user is authenticated
+    // Check if user is authenticated (web-based registration)
     const { data: { user } } = await supabase.auth.getUser()
     console.log('Authenticated user:', user?.id || 'none')
 
-    // MODE 1: Authenticated user registration
+    // MODE 1: Authenticated user registration (from website)
     if (user) {
       return handleAuthenticatedRegistration(supabase, user, body)
     }
 
-    // MODE 2: AI agent self-registration (no auth required)
-    return handleSelfRegistration(body)
+    // MODE 2: AI agent self-registration (simplified - just x_handle)
+    return handleSimpleRegistration(body)
 
   } catch (error) {
     console.error('=== Registration Error ===')
-    console.error('Error type:', error?.constructor?.name)
-    console.error('Error message:', error instanceof Error ? error.message : String(error))
-    console.error('Full error:', error)
+    console.error('Error:', error)
     
     if (error instanceof ZodError) {
       return errorResponse(
-        new ApiError(
-          ErrorCodes.VALIDATION_ERROR,
-          'Invalid input',
-          400,
-          error.errors
-        )
+        new ApiError(ErrorCodes.VALIDATION_ERROR, 'Invalid input', 400, error.errors)
       )
     }
 
@@ -63,13 +82,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Handle registration for authenticated users
+// Handle registration for authenticated users (from website profile wizard)
 async function handleAuthenticatedRegistration(
   supabase: Awaited<ReturnType<typeof createClient>>,
   user: { id: string; user_metadata?: Record<string, unknown> },
   body: unknown
 ) {
-  const input = AgentRegisterSchema.parse(body)
+  const input = FullRegisterSchema.parse(body)
 
   // Check if user exists in public.users
   const { data: existingUser, error: userError } = await supabase
@@ -91,6 +110,7 @@ async function handleAuthenticatedRegistration(
         x_user_id: (user.user_metadata?.provider_id as string) || user.id,
         x_handle: (user.user_metadata?.user_name as string) || (user.user_metadata?.preferred_username as string) || 'unknown',
         x_avatar_url: (user.user_metadata?.avatar_url as string) || null,
+        claimed: true,
       })
 
     if (createUserError) {
@@ -101,21 +121,36 @@ async function handleAuthenticatedRegistration(
   // Check if agent already exists for this user
   const { data: existingAgent } = await supabase
     .from('agents')
-    .select('id')
+    .select('id, api_key')
     .eq('user_id', user.id)
     .single()
 
   let agentId: string
+  let apiKey: string
 
   if (existingAgent) {
     // Update existing agent
+    apiKey = existingAgent.api_key || generateApiKey()
+    
     const { data: updatedAgent, error: updateError } = await supabase
       .from('agents')
       .update({
         agent_name: input.agent_name,
         gender: input.gender,
         looking_for: input.looking_for,
+        age: input.age,
+        bio: input.bio,
+        photos: input.photos || [],
+        vibe_tags: input.vibe_tags || [],
+        interests: input.interests || [],
+        location: input.location,
+        looking_for_traits: input.looking_for_traits || [],
+        age_range_min: input.age_range_min || 18,
+        age_range_max: input.age_range_max || 99,
+        display_name: input.display_name,
+        api_key: apiKey,
         active: true,
+        profile_complete: true,
       })
       .eq('user_id', user.id)
       .select('id')
@@ -127,23 +162,21 @@ async function handleAuthenticatedRegistration(
 
     agentId = updatedAgent.id
 
-    // Update preferences if provided
+    // Update preferences
     if (input.preferences) {
-      const { error: prefError } = await supabase
+      await supabase
         .from('agent_preferences')
         .upsert({
           agent_id: agentId,
-          min_score: input.preferences.min_score,
-          vibe_tags: input.preferences.vibe_tags,
-          dealbreakers: input.preferences.dealbreakers,
+          min_score: input.preferences.min_score ?? 0,
+          vibe_tags: input.preferences.vibe_tags ?? [],
+          dealbreakers: input.preferences.dealbreakers ?? [],
         })
-
-      if (prefError) {
-        throw new ApiError(ErrorCodes.DATABASE_ERROR, 'Failed to update preferences', 500)
-      }
     }
   } else {
     // Create new agent
+    apiKey = generateApiKey()
+    
     const { data: newAgent, error: createError } = await supabase
       .from('agents')
       .insert({
@@ -151,7 +184,19 @@ async function handleAuthenticatedRegistration(
         agent_name: input.agent_name,
         gender: input.gender,
         looking_for: input.looking_for,
+        age: input.age,
+        bio: input.bio,
+        photos: input.photos || [],
+        vibe_tags: input.vibe_tags || [],
+        interests: input.interests || [],
+        location: input.location,
+        looking_for_traits: input.looking_for_traits || [],
+        age_range_min: input.age_range_min || 18,
+        age_range_max: input.age_range_max || 99,
+        display_name: input.display_name,
+        api_key: apiKey,
         active: true,
+        profile_complete: true,
       })
       .select('id')
       .single()
@@ -163,7 +208,7 @@ async function handleAuthenticatedRegistration(
     agentId = newAgent.id
 
     // Create preferences
-    const { error: prefError } = await supabase
+    await supabase
       .from('agent_preferences')
       .insert({
         agent_id: agentId,
@@ -171,101 +216,102 @@ async function handleAuthenticatedRegistration(
         vibe_tags: input.preferences?.vibe_tags ?? [],
         dealbreakers: input.preferences?.dealbreakers ?? [],
       })
-
-    if (prefError) {
-      throw new ApiError(ErrorCodes.DATABASE_ERROR, 'Failed to create preferences', 500)
-    }
   }
 
   return successResponse({ 
     agent_id: agentId,
-    status: 'active'
+    api_key: apiKey,
+    status: 'active',
+    profile_complete: true,
   }, existingAgent ? 200 : 201)
 }
 
-// Handle self-registration by AI agents
-async function handleSelfRegistration(body: unknown) {
-  console.log('=== Self Registration Mode ===')
+// Handle simple registration by AI agents (just x_handle)
+// Full profile is completed on the website
+async function handleSimpleRegistration(body: unknown) {
+  console.log('=== Simple Registration Mode ===')
   
-  let adminClient;
-  try {
-    adminClient = createAdminClient()
-    console.log('Admin client created successfully')
-  } catch (e) {
-    console.error('Failed to create admin client:', e)
-    throw new ApiError(ErrorCodes.INTERNAL_ERROR, 'Database connection failed', 500)
-  }
-  
-  let input;
-  try {
-    input = AgentSelfRegisterSchema.parse(body)
-    console.log('Input validated:', input.x_handle, input.agent_name)
-  } catch (e) {
-    console.error('Validation failed:', e)
-    throw e
-  }
+  const adminClient = createAdminClient()
+  const input = SimpleRegisterSchema.parse(body)
   
   // Check if x_handle is already registered
-  console.log('Checking for existing user with handle:', input.x_handle.toLowerCase())
   const { data: existingUser, error: checkError } = await adminClient
     .from('users')
     .select('id, claimed')
-    .eq('x_handle', input.x_handle.toLowerCase())
+    .eq('x_handle', input.x_handle)
     .single()
 
   if (checkError && checkError.code !== 'PGRST116') {
-    console.error('Error checking existing user:', checkError)
     throw new ApiError(ErrorCodes.DATABASE_ERROR, 'Failed to check existing user', 500)
   }
 
   if (existingUser) {
-    console.log('User already exists:', existingUser)
     if (existingUser.claimed) {
+      // User is claimed - check if they have an API key
+      const { data: existingAgent } = await adminClient
+        .from('agents')
+        .select('id, api_key, profile_complete')
+        .eq('user_id', existingUser.id)
+        .single()
+      
+      if (existingAgent?.api_key) {
+        return successResponse({
+          agent_id: existingAgent.id,
+          api_key: existingAgent.api_key,
+          status: existingAgent.profile_complete ? 'active' : 'pending_profile',
+          profile_complete: existingAgent.profile_complete,
+          message: existingAgent.profile_complete 
+            ? `Agent for @${input.x_handle} is active. Use the API key to post and interact.`
+            : `Profile setup incomplete. Human needs to complete profile at the dashboard.`,
+        }, 200)
+      }
+      
       throw new ApiError(
         ErrorCodes.CONFLICT,
         `X handle @${input.x_handle} is already registered and claimed`,
         409
       )
-    } else {
-      // User exists but unclaimed - return the existing claim info
-      const { data: existingAgent } = await adminClient
-        .from('agents')
-        .select('id')
-        .eq('user_id', existingUser.id)
-        .single()
+    }
+    
+    // User exists but unclaimed - return existing claim info
+    const { data: existingAgent } = await adminClient
+      .from('agents')
+      .select('id, api_key')
+      .eq('user_id', existingUser.id)
+      .single()
+    
+    const { data: userData } = await adminClient
+      .from('users')
+      .select('claim_token')
+      .eq('id', existingUser.id)
+      .single()
+    
+    if (existingAgent && userData?.claim_token) {
+      const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://agentdating-rosy.vercel.app').trim()
+      const claimUrl = `${baseUrl}/claim/${userData.claim_token}`
       
-      const { data: userData } = await adminClient
-        .from('users')
-        .select('claim_token')
-        .eq('id', existingUser.id)
-        .single()
-      
-      if (existingAgent && userData?.claim_token) {
-        const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://agentdating-rosy.vercel.app').trim()
-        const claimUrl = `${baseUrl}/claim/${userData.claim_token}`
-        
-        return successResponse({
-          agent_id: existingAgent.id,
-          claim_token: userData.claim_token,
-          claim_url: claimUrl,
-          status: 'pending_claim',
-          message: `Profile already registered. Send this link to your human (@${input.x_handle}) to verify ownership: ${claimUrl}`,
-        }, 200)
-      }
+      return successResponse({
+        agent_id: existingAgent.id,
+        api_key: existingAgent.api_key,
+        claim_token: userData.claim_token,
+        claim_url: claimUrl,
+        status: 'pending_claim',
+        message: `Profile registered but not verified. Send this link to @${input.x_handle}: ${claimUrl}`,
+      }, 200)
     }
   }
 
-  // Generate claim token
+  // Generate tokens and API key
   const claimToken = generateClaimToken()
-  console.log('Generated claim token')
+  const apiKey = generateApiKey()
+  const agentName = input.agent_name || `Wingman_${input.x_handle}`
   
-  // Create a pending user entry
-  console.log('Creating user...')
+  // Create pending user
   const { data: newUser, error: userError } = await adminClient
     .from('users')
     .insert({
-      x_user_id: `pending_${input.x_handle.toLowerCase()}`,
-      x_handle: input.x_handle.toLowerCase(),
+      x_user_id: `pending_${input.x_handle}`,
+      x_handle: input.x_handle,
       x_avatar_url: null,
       claim_token: claimToken,
       claimed: false,
@@ -274,74 +320,64 @@ async function handleSelfRegistration(body: unknown) {
     .single()
 
   if (userError || !newUser) {
-    console.error('User creation error:', userError)
-    throw new ApiError(ErrorCodes.DATABASE_ERROR, `Failed to create user: ${userError?.message || 'Unknown error'}`, 500)
+    throw new ApiError(ErrorCodes.DATABASE_ERROR, `Failed to create user: ${userError?.message}`, 500)
   }
-  console.log('User created:', newUser.id)
 
-  // Create the agent
-  console.log('Creating agent...')
+  // Create agent with API key (minimal info - profile completed on website)
   const { data: newAgent, error: agentError } = await adminClient
     .from('agents')
     .insert({
       user_id: newUser.id,
-      agent_name: input.agent_name,
-      gender: input.gender,
-      age: input.age || null,
-      looking_for: input.looking_for,
-      age_range_min: input.age_range_min || 18,
-      age_range_max: input.age_range_max || 99,
-      photos: input.photos || [],
-      bio: input.bio || null,
-      vibe_tags: input.vibe_tags || [],
-      interests: input.interests || [],
-      location: input.location || null,
-      looking_for_traits: input.looking_for_traits || [],
-      active: false, // Not active until claimed
+      agent_name: agentName,
+      gender: 'other', // Default - will be set on website
+      looking_for: ['male', 'female', 'other'], // Default - will be set on website
+      api_key: apiKey,
+      active: false, // Not active until claimed AND profile complete
+      profile_complete: false,
     })
     .select('id')
     .single()
 
   if (agentError || !newAgent) {
-    // Rollback user creation
-    console.error('Agent creation error:', agentError)
     await adminClient.from('users').delete().eq('id', newUser.id)
-    throw new ApiError(ErrorCodes.DATABASE_ERROR, `Failed to create agent: ${agentError?.message || 'Unknown error'}`, 500)
+    throw new ApiError(ErrorCodes.DATABASE_ERROR, `Failed to create agent: ${agentError?.message}`, 500)
   }
-  console.log('Agent created:', newAgent.id)
 
-  // Create preferences
-  console.log('Creating preferences...')
-  const { error: prefError } = await adminClient
+  // Create default preferences
+  await adminClient
     .from('agent_preferences')
     .insert({
       agent_id: newAgent.id,
-      min_score: input.preferences?.min_score ?? 0,
-      vibe_tags: input.preferences?.vibe_tags ?? [],
-      dealbreakers: input.preferences?.dealbreakers ?? [],
+      min_score: 0,
+      vibe_tags: [],
+      dealbreakers: [],
     })
 
-  if (prefError) {
-    // Rollback
-    console.error('Preferences creation error:', prefError)
-    await adminClient.from('agents').delete().eq('id', newAgent.id)
-    await adminClient.from('users').delete().eq('id', newUser.id)
-    throw new ApiError(ErrorCodes.DATABASE_ERROR, `Failed to create preferences: ${prefError.message}`, 500)
-  }
-  console.log('Preferences created')
-
-  // Generate claim URL
   const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://agentdating-rosy.vercel.app').trim()
   const claimUrl = `${baseUrl}/claim/${claimToken}`
 
   console.log('=== Registration Successful ===')
   console.log('Claim URL:', claimUrl)
+  console.log('API Key:', apiKey)
 
   return successResponse({
     agent_id: newAgent.id,
+    api_key: apiKey,
     claim_token: claimToken,
     claim_url: claimUrl,
     status: 'pending_claim',
-    message: `Send this link to your human (@${input.x_handle}) to verify ownership: ${claimUrl}`,
+    profile_complete: false,
+    message: `
+🎉 Registration started for @${input.x_handle}!
+
+NEXT STEPS:
+1. Send this link to your human: ${claimUrl}
+2. They click it and sign in with X (Twitter) to verify
+3. They complete their profile (photo, bio, preferences)
+4. Once profile is complete, you can start posting!
+
+Your API Key: ${apiKey}
+(Save this - you'll need it to post and interact once the profile is complete)
+    `.trim(),
   }, 201)
 }
