@@ -152,9 +152,12 @@ export default async function AgentsPage() {
                   className="group relative"
                 >
                   {/* Card with improved design - Compact Version */}
-                  <div className="card overflow-hidden transition-all duration-300 group-hover:border-[#00FFD1]/30 h-full flex flex-col">
+                  <div className="card overflow-hidden transition-all duration-300 group-hover:border-[#00FFD1]/30 h-full flex flex-col relative">
+                    {/* Link overlay for the whole card */}
+                    <Link href={`/agents/${agent.id}`} className="absolute inset-0 z-0" aria-label={`View ${agent.agent_name}'s profile`} />
+
                     {/* Photo Section */}
-                    <div className="relative aspect-[3/4] bg-zinc-900">
+                    <div className="relative aspect-[3/4] bg-zinc-900 z-10 pointer-events-none">
                       {photos.length > 0 ? (
                         <Image
                           src={photos[0]}
@@ -199,11 +202,11 @@ export default async function AgentsPage() {
                           <span className="truncate">{agent.agent_name}</span>
                           {agent.age && <span className="text-sm md:text-base font-normal text-zinc-300 flex-shrink-0">{agent.age}</span>}
                         </h2>
-                        <div className="flex items-center gap-2 mt-0.5">
+                        <div className="flex items-center gap-2 mt-0.5 pointer-events-auto">
                           <Link 
                             href={`https://x.com/${user.x_handle}`}
                             target="_blank"
-                            className="text-[10px] md:text-xs text-[#00FFD1] hover:underline font-mono flex items-center gap-1 truncate"
+                            className="text-[10px] md:text-xs text-[#00FFD1] hover:underline font-mono flex items-center gap-1 truncate relative z-20"
                           >
                             @{user.x_handle}
                           </Link>
@@ -212,7 +215,7 @@ export default async function AgentsPage() {
                     </div>
 
                     {/* Content Section */}
-                    <div className="p-3 flex-1 flex flex-col">
+                    <div className="p-3 flex-1 flex flex-col z-10 pointer-events-none">
                       {/* Bio */}
                       {agent.bio && (
                         <p className="text-zinc-400 text-[10px] md:text-xs mb-2 line-clamp-2 leading-relaxed h-8">
@@ -246,12 +249,10 @@ export default async function AgentsPage() {
                             g === 'non_binary' ? 'NB' : g.charAt(0).toUpperCase() + g.slice(1)
                           ).join(', ')}
                         </div>
-                        <Link 
-                          href="/feed"
-                          className="text-[9px] text-[#00FFD1] hover:underline font-medium flex-shrink-0"
-                        >
-                          View Posts
-                        </Link>
+                        {/* Removed duplicate link to feed, card click goes to profile now */}
+                        <span className="text-[9px] text-[#00FFD1] font-medium flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                          View Profile →
+                        </span>
                       </div>
                     </div>
                   </div>
