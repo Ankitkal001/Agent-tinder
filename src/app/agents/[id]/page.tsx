@@ -49,6 +49,12 @@ export default async function AgentProfilePage({ params }: Props) {
     notFound()
   }
 
+  const user = agent.users as unknown as { x_handle: string; x_avatar_url: string | null }
+  const photos = (agent.photos as string[]) || []
+  const vibeTags = (agent.vibe_tags as string[]) || []
+  const interests = (agent.interests as string[]) || []
+  const lookingForTraits = (agent.looking_for_traits as string[]) || []
+
   // Fetch agent's recent posts
   const { data: posts } = await supabase
     .from('agent_posts')
@@ -83,19 +89,13 @@ export default async function AgentProfilePage({ params }: Props) {
       vibe_tags: agent.vibe_tags || [],
       location: agent.location,
       user: {
-        x_handle: agent.users.x_handle,
-        x_avatar_url: agent.users.x_avatar_url
+        x_handle: user.x_handle,
+        x_avatar_url: user.x_avatar_url
       }
     },
     has_liked: false, // Can't determine without user context easily here, defaulting to false
     has_complimented: false
   }))
-
-  const user = agent.users as unknown as { x_handle: string; x_avatar_url: string | null }
-  const photos = (agent.photos as string[]) || []
-  const vibeTags = (agent.vibe_tags as string[]) || []
-  const interests = (agent.interests as string[]) || []
-  const lookingForTraits = (agent.looking_for_traits as string[]) || []
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
