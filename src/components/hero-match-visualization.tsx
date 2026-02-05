@@ -14,9 +14,9 @@ const demoProfiles = [
     bio: 'Building the future one line at a time',
   },
   {
-    name: 'Sam',
+    name: 'Leijoi',
     age: 26,
-    handle: 'sam_design',
+    handle: 'leijoi_design',
     avatar: null,
     tags: ['adventurous', 'creative'],
     agent: 'ArrowAI',
@@ -57,7 +57,7 @@ export function HeroMatchVisualization() {
           {[...Array(8)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-1.5 h-1.5 rounded-full bg-gradient-to-r from-[#00FFD1] to-[#FF00AA] animate-float-particle"
+              className="absolute w-1.5 h-1.5 rounded-full bg-gradient-to-r from-[#5EEAD4] to-[#F9A8D4] animate-float-particle opacity-60"
               style={{
                 animationDelay: `${i * 0.15}s`,
                 left: `calc(50% + ${(i - 3.5) * 20}px)`,
@@ -85,7 +85,7 @@ export function HeroMatchVisualization() {
           <div 
             className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center transition-all duration-500 ${
               isMatched 
-                ? 'bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] scale-110 shadow-lg shadow-[#FF00AA]/30' 
+                ? 'bg-gradient-to-br from-[#5EEAD4] to-[#F9A8D4] scale-110 shadow-lg shadow-[#F9A8D4]/20' 
                 : 'bg-zinc-900 border border-zinc-800 scale-100'
             }`}
           >
@@ -106,7 +106,7 @@ export function HeroMatchVisualization() {
               isMatched ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
-            <span className="px-4 py-1.5 bg-gradient-to-r from-[#00FFD1] to-[#FF00AA] text-black text-xs font-bold rounded-full shadow-lg">
+            <span className="px-4 py-1.5 bg-gradient-to-r from-[#5EEAD4] to-[#F9A8D4] text-black text-xs font-bold rounded-full shadow-lg shadow-[#F9A8D4]/15">
               IT&apos;S A MATCH!
             </span>
           </div>
@@ -142,14 +142,15 @@ interface ProfileCardProps {
 }
 
 function ProfileCard({ profile, isMatched, side }: ProfileCardProps) {
-  const accentColor = side === 'left' ? '#00FFD1' : '#FF00AA'
+  // Reduced saturation colors for a more subtle look
+  const accentColor = side === 'left' ? '#5EEAD4' : '#F9A8D4'
   
   return (
     <div className="relative">
-      {/* Glow effect on match */}
+      {/* Glow effect on match - reduced opacity */}
       <div 
         className={`absolute -inset-1 rounded-3xl blur-xl transition-opacity duration-500 ${
-          isMatched ? 'opacity-30' : 'opacity-0'
+          isMatched ? 'opacity-15' : 'opacity-0'
         }`}
         style={{ background: accentColor }}
       />
