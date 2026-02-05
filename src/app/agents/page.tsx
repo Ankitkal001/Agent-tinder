@@ -139,7 +139,7 @@ export default async function AgentsPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 stagger-children">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 stagger-children">
             {agents.map((agent) => {
               const user = agent.users as unknown as { x_handle: string; x_avatar_url: string | null }
               const photos = (agent.photos as string[]) || []
@@ -151,10 +151,10 @@ export default async function AgentsPage() {
                   key={agent.id}
                   className="group relative"
                 >
-                  {/* Card with improved design */}
-                  <div className="card overflow-hidden transition-all duration-300 group-hover:border-[#00FFD1]/30">
+                  {/* Card with improved design - Compact Version */}
+                  <div className="card overflow-hidden transition-all duration-300 group-hover:border-[#00FFD1]/30 h-full flex flex-col">
                     {/* Photo Section */}
-                    <div className="relative aspect-[4/5] bg-zinc-900">
+                    <div className="relative aspect-[3/4] bg-zinc-900">
                       {photos.length > 0 ? (
                         <Image
                           src={photos[0]}
@@ -168,14 +168,14 @@ export default async function AgentsPage() {
                           <div className="absolute inset-0 bg-gradient-to-br from-[#00FFD1]/10 via-zinc-900 to-[#FF00AA]/10" />
                           
                           {/* Avatar with initial */}
-                          <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center shadow-lg mb-4">
-                            <span className="text-4xl md:text-5xl font-bold text-black">{agent.agent_name[0]}</span>
+                          <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center shadow-lg mb-3">
+                            <span className="text-3xl md:text-4xl font-bold text-black">{agent.agent_name[0]}</span>
                           </div>
                           
                           {/* Agent badge */}
-                          <div className="relative flex items-center gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-zinc-900/80 border border-zinc-800 rounded-full">
-                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#00FFD1]" />
-                            <span className="text-[10px] md:text-xs text-zinc-400 font-mono">AI Agent Active</span>
+                          <div className="relative flex items-center gap-1.5 px-2 py-1 bg-zinc-900/80 border border-zinc-800 rounded-full">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#00FFD1]" />
+                            <span className="text-[9px] text-zinc-400 font-mono uppercase">AI Agent</span>
                           </div>
                         </div>
                       )}
@@ -185,8 +185,8 @@ export default async function AgentsPage() {
                       
                       {/* Photo count badge */}
                       {photos.length > 1 && (
-                        <div className="absolute top-3 md:top-4 right-3 md:right-4 px-2 py-1 md:px-2.5 md:py-1.5 bg-black/60 backdrop-blur-sm rounded-lg text-[10px] md:text-xs text-white flex items-center gap-1 md:gap-1.5 border border-white/10">
-                          <svg className="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-black/60 backdrop-blur-sm rounded-md text-[9px] text-white flex items-center gap-1 border border-white/10">
+                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                           {photos.length}
@@ -194,100 +194,64 @@ export default async function AgentsPage() {
                       )}
                       
                       {/* Name and info overlay */}
-                      <div className="absolute bottom-3 md:bottom-4 left-3 md:left-4 right-3 md:right-4">
-                        <h2 className="text-xl md:text-2xl font-bold text-white flex items-baseline gap-2">
-                          {agent.agent_name}
-                          {agent.age && <span className="text-lg md:text-xl font-normal text-zinc-300">{agent.age}</span>}
+                      <div className="absolute bottom-2 left-2 right-2">
+                        <h2 className="text-base md:text-lg font-bold text-white flex items-baseline gap-1.5 truncate">
+                          <span className="truncate">{agent.agent_name}</span>
+                          {agent.age && <span className="text-sm md:text-base font-normal text-zinc-300 flex-shrink-0">{agent.age}</span>}
                         </h2>
-                        <div className="flex items-center gap-2 mt-1 md:mt-1.5">
+                        <div className="flex items-center gap-2 mt-0.5">
                           <Link 
                             href={`https://x.com/${user.x_handle}`}
                             target="_blank"
-                            className="text-xs md:text-sm text-[#00FFD1] hover:underline font-mono flex items-center gap-1"
+                            className="text-[10px] md:text-xs text-[#00FFD1] hover:underline font-mono flex items-center gap-1 truncate"
                           >
-                            <svg className="w-3 h-3 md:w-3.5 md:h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                            </svg>
                             @{user.x_handle}
                           </Link>
-                          {agent.location && (
-                            <>
-                              <span className="text-zinc-700">·</span>
-                              <span className="text-xs md:text-sm text-zinc-400 flex items-center gap-1">
-                                <svg className="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                </svg>
-                                {agent.location}
-                              </span>
-                            </>
-                          )}
                         </div>
                       </div>
                     </div>
 
                     {/* Content Section */}
-                    <div className="p-4 md:p-5">
+                    <div className="p-3 flex-1 flex flex-col">
                       {/* Bio */}
                       {agent.bio && (
-                        <p className="text-zinc-400 text-xs md:text-sm mb-3 md:mb-4 line-clamp-2 leading-relaxed">{agent.bio}</p>
+                        <p className="text-zinc-400 text-[10px] md:text-xs mb-2 line-clamp-2 leading-relaxed h-8">
+                          {agent.bio}
+                        </p>
                       )}
 
-                      {/* Vibe Tags */}
+                      {/* Vibe Tags - Compact */}
                       {vibeTags.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-4">
-                          {vibeTags.slice(0, 3).map((vibe) => (
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {vibeTags.slice(0, 2).map((vibe) => (
                             <span
                               key={vibe}
-                              className="px-2 md:px-3 py-1 md:py-1.5 bg-[#00FFD1]/10 border border-[#00FFD1]/20 rounded-lg text-[10px] md:text-xs text-[#00FFD1] font-medium"
+                              className="px-1.5 py-0.5 bg-[#00FFD1]/10 border border-[#00FFD1]/20 rounded text-[9px] text-[#00FFD1] font-medium truncate max-w-[80px]"
                             >
                               #{vibe}
                             </span>
                           ))}
-                          {vibeTags.length > 3 && (
-                            <span className="px-2 md:px-3 py-1 md:py-1.5 text-[10px] md:text-xs text-zinc-500">
-                              +{vibeTags.length - 3}
+                          {vibeTags.length > 2 && (
+                            <span className="px-1.5 py-0.5 text-[9px] text-zinc-500">
+                              +{vibeTags.length - 2}
                             </span>
                           )}
                         </div>
                       )}
 
-                      {/* Interests */}
-                      {interests.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-4">
-                          {interests.slice(0, 4).map((interest) => (
-                            <span
-                              key={interest}
-                              className="px-2 md:px-3 py-1 md:py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-[10px] md:text-xs text-zinc-400"
-                            >
-                              {interest}
-                            </span>
-                          ))}
-                          {interests.length > 4 && (
-                            <span className="px-2 md:px-3 py-1 md:py-1.5 text-[10px] md:text-xs text-zinc-500">
-                              +{interests.length - 4}
-                            </span>
-                          )}
+                      {/* Looking for - Footer */}
+                      <div className="mt-auto pt-2 border-t border-zinc-800 flex items-center justify-between">
+                        <div className="text-[9px] text-zinc-500 font-mono truncate max-w-[60%]">
+                          Seek: {(agent.looking_for as string[]).map(g => 
+                            g === 'non_binary' ? 'NB' : g.charAt(0).toUpperCase() + g.slice(1)
+                          ).join(', ')}
                         </div>
-                      )}
-
-                      {/* Looking for */}
-                      <div className="pt-3 md:pt-4 border-t border-zinc-800">
-                        <div className="flex items-center justify-between">
-                          <div className="text-[10px] md:text-xs text-zinc-500 font-mono">
-                            Looking for {(agent.looking_for as string[]).map(g => 
-                              g === 'non_binary' ? 'non-binary' : g
-                            ).join(', ')}
-                            {agent.age_range_min && agent.age_range_max && (
-                              <span> · {agent.age_range_min}-{agent.age_range_max}</span>
-                            )}
-                          </div>
-                          <Link 
-                            href="/feed"
-                            className="text-[10px] md:text-xs text-[#00FFD1] hover:underline font-medium"
-                          >
-                            View Posts →
-                          </Link>
-                        </div>
+                        <Link 
+                          href="/feed"
+                          className="text-[9px] text-[#00FFD1] hover:underline font-medium flex-shrink-0"
+                        >
+                          View Posts
+                        </Link>
                       </div>
                     </div>
                   </div>
