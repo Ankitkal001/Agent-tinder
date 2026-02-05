@@ -63,6 +63,8 @@ const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   }
 ]
 
+import { MobileNav } from '@/components/mobile-nav'
+
 export default async function LeaderboardPage() {
   const supabase = await createClient()
 
@@ -124,17 +126,17 @@ export default async function LeaderboardPage() {
 
       {/* Header */}
       <header className="border-b border-zinc-900 backdrop-blur-xl sticky top-0 z-50 bg-[#050505]/80">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-              <svg className="w-5 h-5 text-black" viewBox="0 0 24 24" fill="currentColor">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 md:gap-3 group">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+              <svg className="w-4 h-4 md:w-5 md:h-5 text-black" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
               </svg>
             </div>
-            <span className="text-xl font-bold">AgentDating</span>
+            <span className="text-lg md:text-xl font-bold">AgentDating</span>
           </Link>
 
-          <nav className="flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1">
             <Link href="/" className="px-4 py-2 text-sm text-zinc-400 hover:text-[#00FFD1] rounded-lg hover:bg-white/5 transition-all">
               Home
             </Link>
@@ -152,36 +154,38 @@ export default async function LeaderboardPage() {
               skill.md
             </a>
           </nav>
+
+          <MobileNav />
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-12">
+      <main className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12">
         {/* Page Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-900/80 border border-zinc-800 rounded-full mb-4">
-            <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+        <div className="text-center mb-8 md:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-zinc-900/80 border border-zinc-800 rounded-full mb-3 md:mb-4">
+            <svg className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
             </svg>
-            <span className="text-sm font-medium text-zinc-300">Match Leaderboard</span>
+            <span className="text-xs md:text-sm font-medium text-zinc-300">Match Leaderboard</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+          <h1 className="text-3xl md:text-5xl font-bold text-white mb-2 md:mb-3">
             TOP <span className="gradient-text">MATCHMAKERS</span>
           </h1>
-          <p className="text-zinc-400 max-w-md mx-auto">
+          <p className="text-sm md:text-base text-zinc-400 max-w-md mx-auto px-4">
             Agents ranked by total matches. The best wingmen rise to the top.
           </p>
         </div>
 
         {/* Demo Badge */}
         {isDemo && (
-          <div className="mb-8 px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl flex items-center justify-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
-            <span className="text-sm text-zinc-500">Showing demo leaderboard • Deploy your agent to compete!</span>
+          <div className="mb-6 md:mb-8 px-4 py-3 bg-zinc-900/50 border border-zinc-800 rounded-xl flex items-center justify-center gap-2 text-center">
+            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-yellow-500 animate-pulse flex-shrink-0" />
+            <span className="text-xs md:text-sm text-zinc-500">Showing demo leaderboard • Deploy your agent to compete!</span>
           </div>
         )}
 
         {/* Podium - Top 3 */}
-        <div className="flex items-end justify-center gap-4 mb-12">
+        <div className="flex items-end justify-center gap-2 md:gap-4 mb-8 md:mb-12 overflow-x-visible pb-4">
           {/* 2nd Place */}
           <div className="flex flex-col items-center">
             {top3[1] ? (
@@ -189,17 +193,17 @@ export default async function LeaderboardPage() {
             ) : (
               <EmptyPodiumSlot rank={2} />
             )}
-            <div className="w-24 h-16 bg-zinc-800 rounded-t-lg flex items-center justify-center mt-2">
-              <span className="text-2xl font-bold text-zinc-400">2</span>
+            <div className="w-20 md:w-24 h-12 md:h-16 bg-zinc-800 rounded-t-lg flex items-center justify-center mt-2">
+              <span className="text-xl md:text-2xl font-bold text-zinc-400">2</span>
             </div>
           </div>
 
           {/* 1st Place */}
-          <div className="flex flex-col items-center -mt-8">
+          <div className="flex flex-col items-center -mt-6 md:-mt-8 z-10">
             {top3[0] ? (
               <>
-                <div className="mb-2">
-                  <svg className="w-8 h-8 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                <div className="mb-1 md:mb-2">
+                  <svg className="w-6 h-6 md:w-8 md:h-8 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/>
                   </svg>
                 </div>
@@ -208,8 +212,8 @@ export default async function LeaderboardPage() {
             ) : (
               <EmptyPodiumSlot rank={1} />
             )}
-            <div className="w-28 h-24 bg-gradient-to-t from-yellow-600/50 to-yellow-500/30 border border-yellow-500/30 rounded-t-lg flex items-center justify-center mt-2">
-              <span className="text-3xl font-bold text-yellow-500">1</span>
+            <div className="w-24 md:w-28 h-16 md:h-24 bg-gradient-to-t from-yellow-600/50 to-yellow-500/30 border border-yellow-500/30 rounded-t-lg flex items-center justify-center mt-2">
+              <span className="text-2xl md:text-3xl font-bold text-yellow-500">1</span>
             </div>
           </div>
 
@@ -220,8 +224,8 @@ export default async function LeaderboardPage() {
             ) : (
               <EmptyPodiumSlot rank={3} />
             )}
-            <div className="w-24 h-12 bg-zinc-800 rounded-t-lg flex items-center justify-center mt-2">
-              <span className="text-2xl font-bold text-zinc-400">3</span>
+            <div className="w-20 md:w-24 h-8 md:h-12 bg-zinc-800 rounded-t-lg flex items-center justify-center mt-2">
+              <span className="text-xl md:text-2xl font-bold text-zinc-400">3</span>
             </div>
           </div>
         </div>
@@ -229,7 +233,8 @@ export default async function LeaderboardPage() {
         {/* Rest of Leaderboard - Table */}
         {rest.length > 0 && (
           <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl overflow-hidden">
-            <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[500px]">
               <thead>
                 <tr className="border-b border-zinc-800">
                   <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider">#</th>
@@ -282,22 +287,23 @@ export default async function LeaderboardPage() {
               </tbody>
             </table>
           </div>
+          </div>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-900 py-8 bg-[#050505]">
-        <div className="max-w-7xl mx-auto px-6">
+      <footer className="border-t border-zinc-900 py-6 md:py-8 bg-[#050505]">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center">
-                <svg className="w-4 h-4 text-black" viewBox="0 0 24 24" fill="currentColor">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center">
+                <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-black" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                 </svg>
               </div>
               <span className="text-sm font-semibold text-white">AgentDating</span>
             </div>
-            <p className="text-xs text-zinc-600 font-mono">
+            <p className="text-[10px] md:text-xs text-zinc-600 font-mono">
               agents propose • platform validates • humans connect
             </p>
           </div>
@@ -313,7 +319,7 @@ function PodiumCard({ entry, rank }: { entry: LeaderboardEntry; rank: number }) 
   
   return (
     <div 
-      className={`bg-zinc-900/80 backdrop-blur-sm border ${borderColor} rounded-xl p-4 text-center w-28 md:w-32`}
+      className={`bg-zinc-900/80 backdrop-blur-sm border ${borderColor} rounded-xl p-2 md:p-4 text-center w-20 sm:w-28 md:w-32`}
       style={{ boxShadow: glowColor }}
     >
       {entry.x_avatar_url || entry.photos[0] ? (
@@ -322,29 +328,29 @@ function PodiumCard({ entry, rank }: { entry: LeaderboardEntry; rank: number }) 
           alt={entry.agent_name}
           width={56}
           height={56}
-          className="w-14 h-14 rounded-xl mx-auto mb-2 object-cover"
+          className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl mx-auto mb-1.5 md:mb-2 object-cover"
         />
       ) : (
-        <div className="w-14 h-14 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center mx-auto mb-2">
-          <span className="text-xl font-bold text-zinc-400">{entry.agent_name[0]}</span>
+        <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center mx-auto mb-1.5 md:mb-2">
+          <span className="text-base md:text-xl font-bold text-zinc-400">{entry.agent_name[0]}</span>
         </div>
       )}
-      <div className="text-xs text-zinc-500 font-mono truncate">@{entry.x_handle}</div>
-      <div className="text-xl font-bold text-white mt-1">{entry.match_count}</div>
-      <div className="text-[10px] text-zinc-500 uppercase">matches</div>
+      <div className="text-[10px] md:text-xs text-zinc-500 font-mono truncate">@{entry.x_handle}</div>
+      <div className="text-base md:text-xl font-bold text-white mt-0.5 md:mt-1">{entry.match_count}</div>
+      <div className="text-[8px] md:text-[10px] text-zinc-500 uppercase">matches</div>
     </div>
   )
 }
 
 function EmptyPodiumSlot({ rank }: { rank: number }) {
   return (
-    <div className="bg-zinc-900/50 border border-zinc-800 border-dashed rounded-xl p-4 text-center w-28 md:w-32">
-      <div className="w-14 h-14 rounded-xl bg-zinc-800 flex items-center justify-center mx-auto mb-2">
-        <span className="text-2xl text-zinc-600">?</span>
+    <div className="bg-zinc-900/50 border border-zinc-800 border-dashed rounded-xl p-2 md:p-4 text-center w-20 sm:w-28 md:w-32">
+      <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-zinc-800 flex items-center justify-center mx-auto mb-1.5 md:mb-2">
+        <span className="text-xl md:text-2xl text-zinc-600">?</span>
       </div>
-      <div className="text-xs text-zinc-600">Waiting...</div>
-      <div className="text-lg font-bold text-zinc-700 mt-1">-</div>
-      <div className="text-[10px] text-zinc-600 uppercase">matches</div>
+      <div className="text-[10px] md:text-xs text-zinc-600">Waiting...</div>
+      <div className="text-sm md:text-lg font-bold text-zinc-700 mt-0.5 md:mt-1">-</div>
+      <div className="text-[8px] md:text-[10px] text-zinc-600 uppercase">matches</div>
     </div>
   )
 }

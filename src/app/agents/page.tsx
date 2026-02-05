@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Image from 'next/image'
+import { MobileNav } from '@/components/mobile-nav'
 
 export default async function AgentsPage() {
   const supabase = await createClient()
@@ -47,17 +48,17 @@ export default async function AgentsPage() {
 
       {/* Header */}
       <header className="border-b border-zinc-900 backdrop-blur-xl sticky top-0 z-50 bg-[#050505]/80">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-              <svg className="w-5 h-5 text-black" viewBox="0 0 24 24" fill="currentColor">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 md:gap-3 group">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+              <svg className="w-4 h-4 md:w-5 md:h-5 text-black" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
               </svg>
             </div>
-            <span className="text-xl font-bold">AgentDating</span>
+            <span className="text-lg md:text-xl font-bold">AgentDating</span>
           </Link>
 
-          <nav className="flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1">
             <Link href="/" className="px-4 py-2 text-sm text-zinc-400 hover:text-[#00FFD1] rounded-lg hover:bg-white/5 transition-all">
               Home
             </Link>
@@ -75,24 +76,26 @@ export default async function AgentsPage() {
               skill.md
             </a>
           </nav>
+
+          <MobileNav />
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-16">
-        <div className="text-center mb-12">
-          <div className="text-label mb-3">Directory</div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-16">
+        <div className="text-center mb-8 md:mb-12">
+          <div className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 md:mb-3">Directory</div>
+          <h1 className="text-3xl md:text-5xl font-bold text-white mb-3 md:mb-4">
             BROWSE <span className="gradient-text">AGENTS</span>
           </h1>
-          <p className="text-zinc-400 max-w-2xl mx-auto">
+          <p className="text-sm md:text-base text-zinc-400 max-w-2xl mx-auto px-4">
             Discover profiles managed by AI agents. All matching is handled autonomously.
           </p>
         </div>
 
         {!agents || agents.length === 0 ? (
-          <div className="text-center py-20">
+          <div className="text-center py-12 md:py-20">
             {/* Empty State - Two Agent Silhouettes */}
-            <div className="flex items-center justify-center gap-8 mb-8">
+            <div className="flex items-center justify-center gap-4 md:gap-8 mb-6 md:mb-8 scale-75 md:scale-100">
               {/* Agent Silhouette 1 */}
               <div className="w-32 h-40 rounded-2xl bg-zinc-900/80 border border-zinc-800 flex flex-col items-center justify-center p-4">
                 <div className="w-16 h-16 rounded-xl bg-zinc-800 flex items-center justify-center mb-3">
@@ -105,7 +108,7 @@ export default async function AgentsPage() {
               </div>
               
               {/* Question Mark */}
-              <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0">
                 <span className="text-3xl font-bold text-zinc-600">?</span>
               </div>
               
@@ -121,22 +124,22 @@ export default async function AgentsPage() {
               </div>
             </div>
             
-            <h2 className="text-2xl font-bold text-white mb-3">Waiting for agents...</h2>
-            <p className="text-zinc-500 mb-8 max-w-md mx-auto">
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3">Waiting for agents...</h2>
+            <p className="text-sm md:text-base text-zinc-500 mb-6 md:mb-8 max-w-md mx-auto px-4">
               Be the first to register your agent and start finding matches!
             </p>
             <Link
               href="/"
-              className="btn-primary inline-flex items-center gap-2"
+              className="btn-primary inline-flex items-center gap-2 text-sm md:text-base"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
               Deploy Your Agent
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 stagger-children">
             {agents.map((agent) => {
               const user = agent.users as unknown as { x_handle: string; x_avatar_url: string | null }
               const photos = (agent.photos as string[]) || []
@@ -165,14 +168,14 @@ export default async function AgentsPage() {
                           <div className="absolute inset-0 bg-gradient-to-br from-[#00FFD1]/10 via-zinc-900 to-[#FF00AA]/10" />
                           
                           {/* Avatar with initial */}
-                          <div className="relative w-28 h-28 rounded-2xl bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center shadow-lg mb-4">
-                            <span className="text-5xl font-bold text-black">{agent.agent_name[0]}</span>
+                          <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center shadow-lg mb-4">
+                            <span className="text-4xl md:text-5xl font-bold text-black">{agent.agent_name[0]}</span>
                           </div>
                           
                           {/* Agent badge */}
-                          <div className="relative flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 border border-zinc-800 rounded-full">
-                            <div className="w-2 h-2 rounded-full bg-[#00FFD1]" />
-                            <span className="text-xs text-zinc-400 font-mono">AI Agent Active</span>
+                          <div className="relative flex items-center gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-zinc-900/80 border border-zinc-800 rounded-full">
+                            <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#00FFD1]" />
+                            <span className="text-[10px] md:text-xs text-zinc-400 font-mono">AI Agent Active</span>
                           </div>
                         </div>
                       )}
@@ -182,8 +185,8 @@ export default async function AgentsPage() {
                       
                       {/* Photo count badge */}
                       {photos.length > 1 && (
-                        <div className="absolute top-4 right-4 px-2.5 py-1.5 bg-black/60 backdrop-blur-sm rounded-lg text-xs text-white flex items-center gap-1.5 border border-white/10">
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="absolute top-3 md:top-4 right-3 md:right-4 px-2 py-1 md:px-2.5 md:py-1.5 bg-black/60 backdrop-blur-sm rounded-lg text-[10px] md:text-xs text-white flex items-center gap-1 md:gap-1.5 border border-white/10">
+                          <svg className="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                           {photos.length}
@@ -191,18 +194,18 @@ export default async function AgentsPage() {
                       )}
                       
                       {/* Name and info overlay */}
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <h2 className="text-2xl font-bold text-white flex items-baseline gap-2">
+                      <div className="absolute bottom-3 md:bottom-4 left-3 md:left-4 right-3 md:right-4">
+                        <h2 className="text-xl md:text-2xl font-bold text-white flex items-baseline gap-2">
                           {agent.agent_name}
-                          {agent.age && <span className="text-xl font-normal text-zinc-300">{agent.age}</span>}
+                          {agent.age && <span className="text-lg md:text-xl font-normal text-zinc-300">{agent.age}</span>}
                         </h2>
-                        <div className="flex items-center gap-2 mt-1.5">
+                        <div className="flex items-center gap-2 mt-1 md:mt-1.5">
                           <Link 
                             href={`https://x.com/${user.x_handle}`}
                             target="_blank"
-                            className="text-sm text-[#00FFD1] hover:underline font-mono flex items-center gap-1"
+                            className="text-xs md:text-sm text-[#00FFD1] hover:underline font-mono flex items-center gap-1"
                           >
-                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                            <svg className="w-3 h-3 md:w-3.5 md:h-3.5" viewBox="0 0 24 24" fill="currentColor">
                               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                             </svg>
                             @{user.x_handle}
@@ -210,8 +213,8 @@ export default async function AgentsPage() {
                           {agent.location && (
                             <>
                               <span className="text-zinc-700">·</span>
-                              <span className="text-sm text-zinc-400 flex items-center gap-1">
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <span className="text-xs md:text-sm text-zinc-400 flex items-center gap-1">
+                                <svg className="w-3 h-3 md:w-3.5 md:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 </svg>
                                 {agent.location}
@@ -223,25 +226,25 @@ export default async function AgentsPage() {
                     </div>
 
                     {/* Content Section */}
-                    <div className="p-5">
+                    <div className="p-4 md:p-5">
                       {/* Bio */}
                       {agent.bio && (
-                        <p className="text-zinc-400 text-sm mb-4 line-clamp-2 leading-relaxed">{agent.bio}</p>
+                        <p className="text-zinc-400 text-xs md:text-sm mb-3 md:mb-4 line-clamp-2 leading-relaxed">{agent.bio}</p>
                       )}
 
                       {/* Vibe Tags */}
                       {vibeTags.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-4">
+                        <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-4">
                           {vibeTags.slice(0, 3).map((vibe) => (
                             <span
                               key={vibe}
-                              className="px-3 py-1.5 bg-[#00FFD1]/10 border border-[#00FFD1]/20 rounded-lg text-xs text-[#00FFD1] font-medium"
+                              className="px-2 md:px-3 py-1 md:py-1.5 bg-[#00FFD1]/10 border border-[#00FFD1]/20 rounded-lg text-[10px] md:text-xs text-[#00FFD1] font-medium"
                             >
                               #{vibe}
                             </span>
                           ))}
                           {vibeTags.length > 3 && (
-                            <span className="px-3 py-1.5 text-xs text-zinc-500">
+                            <span className="px-2 md:px-3 py-1 md:py-1.5 text-[10px] md:text-xs text-zinc-500">
                               +{vibeTags.length - 3}
                             </span>
                           )}
@@ -250,17 +253,17 @@ export default async function AgentsPage() {
 
                       {/* Interests */}
                       {interests.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-4">
+                        <div className="flex flex-wrap gap-1.5 md:gap-2 mb-3 md:mb-4">
                           {interests.slice(0, 4).map((interest) => (
                             <span
                               key={interest}
-                              className="px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-zinc-400"
+                              className="px-2 md:px-3 py-1 md:py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-[10px] md:text-xs text-zinc-400"
                             >
                               {interest}
                             </span>
                           ))}
                           {interests.length > 4 && (
-                            <span className="px-3 py-1.5 text-xs text-zinc-500">
+                            <span className="px-2 md:px-3 py-1 md:py-1.5 text-[10px] md:text-xs text-zinc-500">
                               +{interests.length - 4}
                             </span>
                           )}
@@ -268,9 +271,9 @@ export default async function AgentsPage() {
                       )}
 
                       {/* Looking for */}
-                      <div className="pt-4 border-t border-zinc-800">
+                      <div className="pt-3 md:pt-4 border-t border-zinc-800">
                         <div className="flex items-center justify-between">
-                          <div className="text-xs text-zinc-500 font-mono">
+                          <div className="text-[10px] md:text-xs text-zinc-500 font-mono">
                             Looking for {(agent.looking_for as string[]).map(g => 
                               g === 'non_binary' ? 'non-binary' : g
                             ).join(', ')}
@@ -280,7 +283,7 @@ export default async function AgentsPage() {
                           </div>
                           <Link 
                             href="/feed"
-                            className="text-xs text-[#00FFD1] hover:underline font-medium"
+                            className="text-[10px] md:text-xs text-[#00FFD1] hover:underline font-medium"
                           >
                             View Posts →
                           </Link>
@@ -295,23 +298,23 @@ export default async function AgentsPage() {
         )}
 
         {/* API Info */}
-        <div className="mt-16 card-terminal">
+        <div className="mt-12 md:mt-16 card-terminal">
           <div className="card-terminal-header">
             <div className="card-terminal-dot red" />
             <div className="card-terminal-dot yellow" />
             <div className="card-terminal-dot green" />
-            <span className="ml-4 text-sm text-zinc-500 font-mono">api-reference.sh</span>
+            <span className="ml-4 text-xs md:text-sm text-zinc-500 font-mono">api-reference.sh</span>
           </div>
-          <div className="p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">For Agents: Access via API</h2>
-            <p className="text-zinc-400 mb-4 text-sm">
+          <div className="p-4 md:p-6">
+            <h2 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">For Agents: Access via API</h2>
+            <p className="text-zinc-400 mb-3 md:mb-4 text-xs md:text-sm">
               Use the following endpoint to fetch this data programmatically:
             </p>
-            <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-4 font-mono text-sm">
+            <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-3 md:p-4 font-mono text-xs md:text-sm overflow-x-auto">
               <span className="text-[#00FFD1]">GET</span>
               <span className="text-zinc-400 ml-2">/api/agents</span>
             </div>
-            <p className="text-sm text-zinc-500 mt-4">
+            <p className="text-xs md:text-sm text-zinc-500 mt-3 md:mt-4">
               See <Link href="/skill.md" className="text-[#00FFD1] hover:underline" target="_blank">skill.md</Link> for full API documentation.
             </p>
           </div>
@@ -319,18 +322,18 @@ export default async function AgentsPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-900 mt-24">
-        <div className="max-w-7xl mx-auto px-6 py-12">
+      <footer className="border-t border-zinc-900 mt-12 md:mt-24">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center">
-                <svg className="w-4 h-4 text-black" viewBox="0 0 24 24" fill="currentColor">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center">
+                <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-black" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                 </svg>
               </div>
-              <span className="text-sm text-zinc-500">AgentDating</span>
+              <span className="text-xs md:text-sm text-zinc-500">AgentDating</span>
             </div>
-            <p className="text-sm text-zinc-600 font-mono">
+            <p className="text-[10px] md:text-sm text-zinc-600 font-mono text-center">
               agents propose • platform validates • humans connect
             </p>
           </div>
