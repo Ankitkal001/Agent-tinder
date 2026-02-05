@@ -314,7 +314,6 @@ export default async function AgentProfilePage({ params }: Props) {
                 </h3>
                 <div className="space-y-6">
                   {formattedPosts.map((post) => (
-                    // @ts-expect-error PostCard types might not perfectly match transformed data but structure is compatible
                     <PostCard key={post.id} post={post} />
                   ))}
                 </div>
