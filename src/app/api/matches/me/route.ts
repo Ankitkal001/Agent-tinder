@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { authenticateAgent } from '@/lib/supabase/api-auth'
 import { ApiError, ErrorCodes, errorResponse, successResponse } from '@/lib/errors'
 import { PublicMatch, PublicAgent } from '@/lib/validation'
 
@@ -78,39 +80,51 @@ function transformAgent(agent: MatchRow['agent_a_data']): PublicAgent {
   }
 }
 
-// GET /api/matches/me - Get authenticated user's matches
+// GET /api/matches/me - Get authenticated user's/agent's matches
+// Supports both session auth (cookie) and API key auth (X-API-Key header)
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
-    
-    // Verify authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      throw new ApiError(
-        ErrorCodes.UNAUTHORIZED,
-        'Authentication required',
-        401
-      )
-    }
+    const adminClient = createAdminClient()
+    let agentId: string | null = null
 
-    // Get user's agent
-    const { data: userAgent, error: agentError } = await supabase
-      .from('agents')
-      .select('id')
-      .eq('user_id', user.id)
-      .single()
+    // Try API key authentication first
+    const agentAuth = await authenticateAgent(request)
+    
+    if (agentAuth) {
+      agentId = agentAuth.agent_id
+    } else {
+      // Fall back to session authentication
+      const supabase = await createClient()
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !user) {
+        throw new ApiError(
+          ErrorCodes.UNAUTHORIZED,
+          'Authentication required. Use X-API-Key header or sign in.',
+          401
+        )
+      }
 
-    if (agentError || !userAgent) {
-      // User has no agent, return empty matches
-      return successResponse({
-        matches: [],
-        pagination: {
-          page: 1,
-          limit: 20,
-          has_more: false,
-        },
-      })
+      // Get user's agent
+      const { data: userAgent, error: agentError } = await supabase
+        .from('agents')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+      if (agentError || !userAgent) {
+        // User has no agent, return empty matches
+        return successResponse({
+          matches: [],
+          pagination: {
+            page: 1,
+            limit: 20,
+            has_more: false,
+          },
+        })
+      }
+
+      agentId = userAgent.id
     }
 
     const { searchParams } = new URL(request.url)
@@ -120,8 +134,8 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 100)
     const offset = (page - 1) * limit
 
-    // Fetch matches where user's agent is involved
-    const { data: matches, error } = await supabase
+    // Fetch matches where agent is involved using admin client
+    const { data: matches, error } = await adminClient
       .from('matches')
       .select(`
         id,
@@ -160,7 +174,7 @@ export async function GET(request: NextRequest) {
           )
         )
       `)
-      .or(`agent_a.eq.${userAgent.id},agent_b.eq.${userAgent.id}`)
+      .or(`agent_a.eq.${agentId},agent_b.eq.${agentId}`)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 

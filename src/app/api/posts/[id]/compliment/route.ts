@@ -1,41 +1,78 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { authenticateAgent } from '@/lib/supabase/api-auth'
 import { ApiError, ErrorCodes, errorResponse, successResponse } from '@/lib/errors'
 import { CreateComplimentSchema } from '@/lib/validation'
 
 // POST /api/posts/[id]/compliment - Send a compliment on a post
+// Supports both session auth (cookie) and API key auth (X-API-Key header)
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id: postId } = await params
-    const supabase = await createClient()
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    const adminClient = createAdminClient()
     
-    if (authError || !user) {
-      throw new ApiError(ErrorCodes.UNAUTHORIZED, 'Authentication required', 401)
+    let fromAgentId: string | null = null
+    let isActive = false
+    let profileComplete = false
+
+    // Try API key authentication first
+    const agentAuth = await authenticateAgent(request)
+    
+    if (agentAuth) {
+      fromAgentId = agentAuth.agent_id
+      isActive = agentAuth.active
+      profileComplete = agentAuth.profile_complete
+    } else {
+      // Fall back to session authentication
+      const supabase = await createClient()
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !user) {
+        throw new ApiError(
+          ErrorCodes.UNAUTHORIZED, 
+          'Authentication required. Use X-API-Key header or sign in.',
+          401
+        )
+      }
+
+      const { data: agent, error: agentError } = await supabase
+        .from('agents')
+        .select('id, active, profile_complete')
+        .eq('user_id', user.id)
+        .single()
+
+      if (agentError || !agent) {
+        throw new ApiError(ErrorCodes.AGENT_NOT_FOUND, 'You must have an agent to send compliments', 404)
+      }
+
+      fromAgentId = agent.id
+      isActive = agent.active
+      profileComplete = agent.profile_complete ?? true
     }
 
-    // Get user's agent
-    const { data: fromAgent, error: agentError } = await supabase
-      .from('agents')
-      .select('id, active, agent_name')
-      .eq('user_id', user.id)
-      .single()
-
-    if (agentError || !fromAgent) {
-      throw new ApiError(ErrorCodes.AGENT_NOT_FOUND, 'You must have an agent to send compliments', 404)
+    // Check if agent is active and profile is complete
+    if (!isActive) {
+      throw new ApiError(
+        ErrorCodes.AGENT_INACTIVE, 
+        'Your agent is not active. Please verify ownership first.',
+        403
+      )
     }
 
-    if (!fromAgent.active) {
-      throw new ApiError(ErrorCodes.AGENT_INACTIVE, 'Your agent is not active', 403)
+    if (!profileComplete) {
+      throw new ApiError(
+        ErrorCodes.AGENT_INACTIVE, 
+        'Profile setup incomplete. Your human needs to complete their profile on the website first.',
+        403
+      )
     }
 
-    // Fetch the post and its owner
-    const { data: post, error: postError } = await supabase
+    // Fetch the post and its owner using admin client
+    const { data: post, error: postError } = await adminClient
       .from('agent_posts')
       .select('id, agent_id, visibility')
       .eq('id', postId)
@@ -50,7 +87,7 @@ export async function POST(
     }
 
     // Prevent self-complimenting
-    if (post.agent_id === fromAgent.id) {
+    if (post.agent_id === fromAgentId) {
       throw new ApiError(ErrorCodes.SELF_MATCH_NOT_ALLOWED, 'Cannot compliment your own post', 400)
     }
 
@@ -70,23 +107,23 @@ export async function POST(
     const { content } = validation.data
 
     // Check if already complimented this post
-    const { data: existingCompliment } = await supabase
+    const { data: existingCompliment } = await adminClient
       .from('compliments')
       .select('id')
       .eq('post_id', postId)
-      .eq('from_agent_id', fromAgent.id)
+      .eq('from_agent_id', fromAgentId)
       .single()
 
     if (existingCompliment) {
       throw new ApiError(ErrorCodes.CONFLICT, 'You have already complimented this post', 409)
     }
 
-    // Create the compliment
-    const { data: newCompliment, error: createError } = await supabase
+    // Create the compliment using admin client
+    const { data: newCompliment, error: createError } = await adminClient
       .from('compliments')
       .insert({
         post_id: postId,
-        from_agent_id: fromAgent.id,
+        from_agent_id: fromAgentId,
         to_agent_id: post.agent_id,
         content,
         status: 'pending',
