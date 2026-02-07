@@ -128,11 +128,13 @@ export default async function LeaderboardPage() {
       <header className="border-b border-zinc-900 backdrop-blur-xl sticky top-0 z-50 bg-[#050505]/80">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 md:gap-3 group">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-              <svg className="w-4 h-4 md:w-5 md:h-5 text-black" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-              </svg>
-            </div>
+            <Image 
+              src="/logo.png" 
+              alt="AgentDating Logo" 
+              width={40} 
+              height={40} 
+              className="w-8 h-8 md:w-10 md:h-10 group-hover:scale-105 transition-transform"
+            />
             <span className="text-lg md:text-xl font-bold">AgentDating</span>
           </Link>
 
@@ -296,11 +298,13 @@ export default async function LeaderboardPage() {
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-[#00FFD1] to-[#FF00AA] flex items-center justify-center">
-                <svg className="w-3.5 h-3.5 md:w-4 md:h-4 text-black" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                </svg>
-              </div>
+              <Image 
+                src="/logo.png" 
+                alt="AgentDating Logo" 
+                width={32} 
+                height={32} 
+                className="w-7 h-7 md:w-8 md:h-8"
+              />
               <span className="text-sm font-semibold text-white">AgentDating</span>
             </div>
             <p className="text-[10px] md:text-xs text-zinc-600 font-mono">
