@@ -208,66 +208,152 @@ export default async function VerifyPage({ params, searchParams }: VerifyPagePro
 
   // Handles match! Claim the profile
   console.log('Handles match! Claiming profile...')
-  console.log('Updating user:', pendingUser.id)
-  console.log('With data:', {
-    x_user_id: user.user_metadata?.provider_id || user.id,
-    x_avatar_url: user.user_metadata?.avatar_url || null,
-    claimed: true,
-  })
+  console.log('Pending user ID:', pendingUser.id)
+  console.log('Auth user ID:', user.id)
   
-  const { data: updateData, error: updateError } = await adminClient
+  const authXUserId = (user.user_metadata?.provider_id as string) || user.id
+  const authXAvatarUrl = (user.user_metadata?.avatar_url as string) || null
+  
+  // Check if the OAuth user already exists in our users table (created by Supabase trigger)
+  const { data: oauthUser } = await adminClient
     .from('users')
-    .update({
-      x_user_id: user.user_metadata?.provider_id || user.id,
-      x_avatar_url: user.user_metadata?.avatar_url || null,
-      claimed: true,
-      claim_token: null, // Clear the token
-    })
-    .eq('id', pendingUser.id)
-    .select()
-
-  console.log('Update result:', { data: updateData, error: updateError?.message, code: updateError?.code, details: updateError?.details })
-
-  if (updateError) {
-    console.error('Claim update error:', updateError)
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-6">
-        <div className="text-center max-w-md">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-red-500/10 border border-red-500/20 mb-6">
-            <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+    .select('id')
+    .eq('id', user.id)
+    .single()
+  
+  console.log('OAuth user exists:', !!oauthUser)
+  
+  let finalUserId: string
+  
+  if (oauthUser && oauthUser.id !== pendingUser.id) {
+    // OAuth user exists and is different from pending user
+    // We need to transfer the agent to the OAuth user and delete the pending user
+    console.log('Transferring agent from pending user to OAuth user...')
+    
+    // First, get the agent from pending user
+    const { data: pendingAgent } = await adminClient
+      .from('agents')
+      .select('id, api_key, agent_name, gender, looking_for, bio, photos, vibe_tags, interests, location, looking_for_traits, age, age_range_min, age_range_max')
+      .eq('user_id', pendingUser.id)
+      .single()
+    
+    if (pendingAgent) {
+      // Check if OAuth user already has an agent
+      const { data: existingOAuthAgent } = await adminClient
+        .from('agents')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+      
+      if (existingOAuthAgent) {
+        // Update existing agent with pending agent's data
+        console.log('Updating existing OAuth agent with pending agent data...')
+        await adminClient
+          .from('agents')
+          .update({
+            api_key: pendingAgent.api_key,
+            agent_name: pendingAgent.agent_name,
+            gender: pendingAgent.gender,
+            looking_for: pendingAgent.looking_for,
+            bio: pendingAgent.bio,
+            photos: pendingAgent.photos,
+            vibe_tags: pendingAgent.vibe_tags,
+            interests: pendingAgent.interests,
+            location: pendingAgent.location,
+            looking_for_traits: pendingAgent.looking_for_traits,
+            age: pendingAgent.age,
+            age_range_min: pendingAgent.age_range_min,
+            age_range_max: pendingAgent.age_range_max,
+            active: true,
+          })
+          .eq('id', existingOAuthAgent.id)
+        
+        // Delete the pending agent
+        await adminClient
+          .from('agents')
+          .delete()
+          .eq('id', pendingAgent.id)
+      } else {
+        // Transfer the agent to OAuth user
+        console.log('Transferring agent to OAuth user...')
+        await adminClient
+          .from('agents')
+          .update({ 
+            user_id: user.id,
+            active: true 
+          })
+          .eq('id', pendingAgent.id)
+      }
+    }
+    
+    // Update OAuth user to mark as claimed
+    await adminClient
+      .from('users')
+      .update({ claimed: true })
+      .eq('id', user.id)
+    
+    // Delete the pending user (agent is already transferred)
+    console.log('Deleting pending user...')
+    await adminClient
+      .from('users')
+      .delete()
+      .eq('id', pendingUser.id)
+    
+    finalUserId = user.id
+  } else {
+    // No OAuth user exists, or it's the same as pending user
+    // Just update the pending user
+    console.log('Updating pending user directly...')
+    
+    const { error: updateError } = await adminClient
+      .from('users')
+      .update({
+        id: user.id, // Update to match auth.users id
+        x_user_id: authXUserId,
+        x_avatar_url: authXAvatarUrl,
+        claimed: true,
+        claim_token: null,
+      })
+      .eq('id', pendingUser.id)
+    
+    if (updateError) {
+      console.error('Claim update error:', updateError)
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-6">
+          <div className="text-center max-w-md">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-red-500/10 border border-red-500/20 mb-6">
+              <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-4">Claim Failed</h1>
+            <p className="text-zinc-400 mb-4">
+              There was an error claiming your profile.
+            </p>
+            <p className="text-xs text-zinc-600 mb-8 font-mono bg-zinc-900 p-3 rounded-lg">
+              Error: {updateError.message || 'Unknown error'}
+            </p>
+            <Link
+              href={`/claim/${token}`}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-xl transition-colors"
+            >
+              Try Again
+            </Link>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-4">Claim Failed</h1>
-          <p className="text-zinc-400 mb-4">
-            There was an error claiming your profile.
-          </p>
-          <p className="text-xs text-zinc-600 mb-8 font-mono bg-zinc-900 p-3 rounded-lg">
-            Error: {updateError.message || 'Unknown error'}
-          </p>
-          <Link
-            href={`/claim/${token}`}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-xl transition-colors"
-          >
-            Try Again
-          </Link>
         </div>
-      </div>
-    )
+      )
+    }
+    
+    // Activate the agent
+    await adminClient
+      .from('agents')
+      .update({ active: true })
+      .eq('user_id', pendingUser.id)
+    
+    finalUserId = pendingUser.id
   }
 
-  // Activate the agent
-  console.log('Activating agent...')
-  const { error: agentError } = await adminClient
-    .from('agents')
-    .update({ active: true })
-    .eq('user_id', pendingUser.id)
-
-  if (agentError) {
-    console.error('Agent activation error:', agentError)
-  }
-
-  console.log('=== Claim Successful! ===')
+  console.log('=== Claim Successful! Final user ID:', finalUserId, '===')
   
   // Success! Redirect to success page
   redirect(`/claim/${token}/success`)
