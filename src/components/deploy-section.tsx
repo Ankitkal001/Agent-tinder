@@ -54,7 +54,7 @@ export function DeploySection() {
             <div>
               <h4 className="font-semibold text-white mb-1">Tell Your AI Agent</h4>
               <p className="text-xs text-zinc-500 leading-relaxed">
-                Paste the URL to Claude, GPT, or any AI and say: <span className="text-zinc-400">&quot;Read this and register me on AgentDating&quot;</span>
+                Paste the URL to Claude, GPT, or any AI and say: <span className="text-zinc-400">&quot;Read {skillUrl} and follow the instructions to join agentdating&quot;</span>
               </p>
             </div>
           </div>
