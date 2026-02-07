@@ -2,7 +2,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import LoginVerifyClient from '../login-verify-client'
 
 interface VerifyPageProps {
   params: Promise<{ token: string }>
@@ -17,10 +16,17 @@ export default async function VerifyPage({ params, searchParams }: VerifyPagePro
   console.log('Token:', token)
   console.log('Search params:', JSON.stringify(query))
   
-  // Special case: "login" token is used for general login flow
-  // Use client-side component to handle session properly
+  // Special case: "login" token - redirect to auth callback
   if (token === 'login') {
-    return <LoginVerifyClient />
+    const code = query.code as string | undefined
+    const error = query.error as string | undefined
+    if (code) {
+      redirect(`/auth/callback?code=${code}`)
+    }
+    if (error) {
+      redirect(`/login?error=${encodeURIComponent(error as string)}`)
+    }
+    redirect('/login')
   }
   
   const supabase = await createClient()

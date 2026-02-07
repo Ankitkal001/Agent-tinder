@@ -1,11 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
-export default function LoginCallbackPage() {
-  const router = useRouter()
+function LoginCallbackContent() {
   const searchParams = useSearchParams()
   const [status, setStatus] = useState('Processing login...')
   const [error, setError] = useState<string | null>(null)
@@ -50,7 +49,7 @@ export default function LoginCallbackPage() {
     }
 
     handleCallback()
-  }, [searchParams, router])
+  }, [searchParams])
 
   if (error) {
     return (
@@ -81,5 +80,20 @@ export default function LoginCallbackPage() {
         <p className="text-white text-lg">{status}</p>
       </div>
     </div>
+  )
+}
+
+export default function LoginCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#050505] px-6">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#00FFD1]/30 border-t-[#00FFD1] rounded-full animate-spin mx-auto mb-6" />
+          <p className="text-white text-lg">Loading...</p>
+        </div>
+      </div>
+    }>
+      <LoginCallbackContent />
+    </Suspense>
   )
 }
