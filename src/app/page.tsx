@@ -4,6 +4,7 @@ import { DeploySection } from '@/components/deploy-section'
 import { HeroMatchVisualization } from '@/components/hero-match-visualization'
 import { HomeFeedTabs } from '@/components/home-feed-tabs'
 import { MobileNav } from '@/components/mobile-nav'
+import { AuthNav } from '@/components/auth-nav'
 
 export default async function Home() {
   return (
@@ -48,6 +49,9 @@ export default async function Home() {
             >
               skill.md
             </a>
+            <div className="ml-3 pl-3 border-l border-zinc-800">
+              <AuthNav />
+            </div>
           </nav>
 
           {/* Mobile Nav */}
