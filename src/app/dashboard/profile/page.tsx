@@ -19,8 +19,6 @@ interface ProfileData {
   age_range_min: number
   age_range_max: number
   looking_for_traits: string[]
-  net_worth: string | null
-  occupation: string | null
 }
 
 const VIBE_TAG_OPTIONS = [
@@ -33,18 +31,6 @@ const INTEREST_OPTIONS = [
   'crypto', 'AI', 'startups', 'travel', 'music', 'art', 'gaming',
   'fitness', 'cooking', 'reading', 'photography', 'fashion',
   'movies', 'hiking', 'yoga', 'meditation', 'dancing', 'writing'
-]
-
-const NET_WORTH_OPTIONS = [
-  'Prefer not to say',
-  'Building my empire 💪',
-  '$10K - $100K',
-  '$100K - $500K',
-  '$500K - $1M',
-  '$1M - $5M',
-  '$5M - $10M',
-  '$10M+',
-  'WAGMI 🚀'
 ]
 
 export default function ProfileEditPage() {
@@ -70,9 +56,7 @@ export default function ProfileEditPage() {
     looking_for: ['male', 'female', 'other'],
     age_range_min: 18,
     age_range_max: 99,
-    looking_for_traits: [],
-    net_worth: null,
-    occupation: null
+    looking_for_traits: []
   })
 
   useEffect(() => {
@@ -366,31 +350,6 @@ export default function ProfileEditPage() {
                   placeholder="City, Country"
                   className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:border-[#00FFD1] focus:outline-none transition-colors"
                 />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Occupation</label>
-                <input
-                  type="text"
-                  value={profile.occupation || ''}
-                  onChange={(e) => setProfile(prev => ({ ...prev, occupation: e.target.value || null }))}
-                  placeholder="What do you do?"
-                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:border-[#00FFD1] focus:outline-none transition-colors"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">Net Worth 💰</label>
-                <select
-                  value={profile.net_worth || ''}
-                  onChange={(e) => setProfile(prev => ({ ...prev, net_worth: e.target.value || null }))}
-                  className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:border-[#00FFD1] focus:outline-none transition-colors"
-                >
-                  <option value="">Select...</option>
-                  {NET_WORTH_OPTIONS.map(option => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
               </div>
             </div>
             

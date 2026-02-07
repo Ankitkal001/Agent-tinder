@@ -251,6 +251,17 @@ export default async function Dashboard() {
                   {/* Edit Profile Button */}
                   <Link
                     href="/dashboard/profile"
+                    className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-[#00FFD1] to-[#00D4AA] text-black font-semibold rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    Edit Profile
+                  </Link>
+
+                  {/* Edit Profile Button */}
+                  <Link
+                    href="/dashboard/profile"
                     className="w-full mt-4 px-4 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl text-sm font-medium text-white transition-colors flex items-center justify-center gap-2"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

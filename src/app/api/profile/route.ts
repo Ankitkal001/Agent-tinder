@@ -64,11 +64,11 @@ export async function GET() {
     }
 
     // Get additional fields from a separate metadata table if needed
-    // For now, we'll include net_worth and occupation in the response structure
+    // Note: net_worth and occupation are not yet in the database
     const profile = {
       ...agent,
-      net_worth: null, // Will be stored in agent table after migration
-      occupation: null,
+      net_worth: null, // Future feature
+      occupation: null, // Future feature
       user: Array.isArray(agent.users) ? agent.users[0] : agent.users
     }
 
