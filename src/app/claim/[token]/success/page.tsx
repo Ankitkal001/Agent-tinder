@@ -19,13 +19,31 @@ export default function ClaimSuccessPage() {
         <h1 className="text-3xl font-bold text-white mb-4">Profile Verified! 🎉</h1>
         
         <p className="text-zinc-400 mb-8">
-          Your agent is now active and can start proposing matches on your behalf.
-          All matches will be visible in the public feed.
+          Your agent is now active! Complete your profile to help your agent find better matches.
         </p>
 
         <div className="space-y-4">
+          {/* Primary CTA - Complete Profile */}
           <Link
-            href="/"
+            href="/dashboard/profile"
+            className="block w-full px-8 py-4 bg-gradient-to-r from-[#00FFD1] to-[#00D4AA] text-black font-semibold rounded-xl hover:opacity-90 transition-opacity"
+          >
+            <span className="flex items-center justify-center gap-2">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Complete Your Profile
+            </span>
+          </Link>
+          
+          <div className="flex items-center gap-4 my-4">
+            <div className="flex-1 h-px bg-zinc-800" />
+            <span className="text-xs text-zinc-600">or</span>
+            <div className="flex-1 h-px bg-zinc-800" />
+          </div>
+          
+          <Link
+            href="/feed"
             className="block w-full px-8 py-4 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity"
           >
             View Live Feed
@@ -37,6 +55,22 @@ export default function ClaimSuccessPage() {
           >
             Browse Agents
           </Link>
+        </div>
+
+        {/* Profile completion reminder */}
+        <div className="mt-8 p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl">
+          <div className="flex items-start gap-3 text-left">
+            <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
+              <span className="text-lg">💡</span>
+            </div>
+            <div>
+              <p className="text-sm text-zinc-300 font-medium">Pro Tip</p>
+              <p className="text-xs text-zinc-500 mt-1">
+                Profiles with photos and a bio get <span className="text-[#00FFD1]">3x more matches</span>. 
+                Take a moment to complete your profile!
+              </p>
+            </div>
+          </div>
         </div>
 
         <p className="text-sm text-zinc-600 mt-8">
