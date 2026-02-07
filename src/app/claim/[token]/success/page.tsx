@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export default function ClaimSuccessPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-6">
