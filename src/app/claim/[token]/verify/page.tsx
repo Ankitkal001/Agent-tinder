@@ -248,7 +248,7 @@ export default async function VerifyPage({ params, searchParams }: VerifyPagePro
       if (existingOAuthAgent) {
         // Update existing agent with pending agent's data
         console.log('Updating existing OAuth agent with pending agent data...')
-        await adminClient
+        const { error: updateAgentError } = await adminClient
           .from('agents')
           .update({
             api_key: pendingAgent.api_key,
@@ -268,36 +268,63 @@ export default async function VerifyPage({ params, searchParams }: VerifyPagePro
           })
           .eq('id', existingOAuthAgent.id)
         
-        // Delete the pending agent
-        await adminClient
+        if (updateAgentError) {
+          console.error('Error updating existing agent:', updateAgentError)
+        }
+        
+        // Delete the pending agent FIRST (before deleting user)
+        console.log('Deleting pending agent...')
+        const { error: deleteAgentError } = await adminClient
           .from('agents')
           .delete()
           .eq('id', pendingAgent.id)
+        
+        if (deleteAgentError) {
+          console.error('Error deleting pending agent:', deleteAgentError)
+        }
       } else {
-        // Transfer the agent to OAuth user
+        // Transfer the agent to OAuth user (change the user_id)
         console.log('Transferring agent to OAuth user...')
-        await adminClient
+        const { error: transferError } = await adminClient
           .from('agents')
           .update({ 
             user_id: user.id,
             active: true 
           })
           .eq('id', pendingAgent.id)
+        
+        if (transferError) {
+          console.error('Error transferring agent:', transferError)
+        }
       }
     }
     
-    // Update OAuth user to mark as claimed
-    await adminClient
+    // Update OAuth user record with X handle info and mark as claimed
+    console.log('Updating OAuth user record...')
+    const { error: updateOAuthError } = await adminClient
       .from('users')
-      .update({ claimed: true })
+      .update({ 
+        claimed: true,
+        x_handle: authXHandle,
+        x_avatar_url: authXAvatarUrl,
+      })
       .eq('id', user.id)
     
-    // Delete the pending user (agent is already transferred)
+    if (updateOAuthError) {
+      console.error('Error updating OAuth user:', updateOAuthError)
+    }
+    
+    // Now delete the pending user (agent should be transferred/deleted by now)
     console.log('Deleting pending user...')
-    await adminClient
+    const { error: deleteUserError } = await adminClient
       .from('users')
       .delete()
       .eq('id', pendingUser.id)
+    
+    if (deleteUserError) {
+      console.error('Error deleting pending user:', deleteUserError)
+      // Don't fail completely - the claim was successful, just cleanup failed
+    }
     
     finalUserId = user.id
   } else {
