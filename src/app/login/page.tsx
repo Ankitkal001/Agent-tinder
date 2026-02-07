@@ -15,9 +15,7 @@ export default function LoginPage() {
     try {
       const supabase = createClient()
       
-      // Use a special login token path that mimics the claim flow structure
-      // The claim flow uses /claim/[token]/verify which works
-      // We'll use /claim/login/verify as our login callback
+      // Use the claim flow pattern which is already whitelisted in Supabase
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'x',
         options: {

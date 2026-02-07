@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
-export default function LoginCallbackPage() {
-  const router = useRouter()
+export default function LoginVerifyClient() {
   const searchParams = useSearchParams()
   const [status, setStatus] = useState('Processing login...')
   const [error, setError] = useState<string | null>(null)
@@ -27,7 +26,7 @@ export default function LoginCallbackPage() {
       }
 
       try {
-        setStatus('Exchanging code for session...')
+        setStatus('Completing authentication...')
         const supabase = createClient()
         
         const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
@@ -37,20 +36,19 @@ export default function LoginCallbackPage() {
           return
         }
 
-        setStatus('Login successful! Redirecting...')
-        
-        // Small delay to ensure cookies are set
-        await new Promise(resolve => setTimeout(resolve, 500))
+        setStatus('Login successful! Redirecting to dashboard...')
         
         // Use window.location for a full page reload to ensure cookies are read
-        window.location.href = '/dashboard'
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 500)
       } catch (err) {
         setError('Failed to complete login')
       }
     }
 
     handleCallback()
-  }, [searchParams, router])
+  }, [searchParams])
 
   if (error) {
     return (

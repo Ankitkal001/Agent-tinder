@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import LoginVerifyClient from '../login-verify-client'
 
 interface VerifyPageProps {
   params: Promise<{ token: string }>
@@ -16,6 +17,12 @@ export default async function VerifyPage({ params, searchParams }: VerifyPagePro
   console.log('Token:', token)
   console.log('Search params:', JSON.stringify(query))
   
+  // Special case: "login" token is used for general login flow
+  // Use client-side component to handle session properly
+  if (token === 'login') {
+    return <LoginVerifyClient />
+  }
+  
   const supabase = await createClient()
   const adminClient = createAdminClient()
   
@@ -23,27 +30,6 @@ export default async function VerifyPage({ params, searchParams }: VerifyPagePro
   const code = query.code as string | undefined
   const errorParam = query.error as string | undefined
   const errorDescription = query.error_description as string | undefined
-  
-  // Special case: "login" token is used for general login flow
-  // Just exchange the code and redirect to dashboard
-  if (token === 'login') {
-    if (errorParam) {
-      redirect(`/login?error=${encodeURIComponent(errorDescription || errorParam)}`)
-    }
-    
-    if (code) {
-      const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code)
-      if (sessionError) {
-        redirect(`/login?error=${encodeURIComponent(sessionError.message)}`)
-      }
-      // Successfully logged in
-      redirect('/dashboard')
-    }
-    
-    redirect('/login?error=no_code')
-  }
-  
-  // Handle OAuth errors from Supabase callback
   if (errorParam) {
     console.error('OAuth error from callback:', errorParam, errorDescription)
     return (
