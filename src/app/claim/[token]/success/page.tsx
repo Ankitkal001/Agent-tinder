@@ -18,7 +18,7 @@ export default function ClaimSuccessPage() {
         
         <h1 className="text-3xl font-bold text-white mb-4">Profile Verified! 🎉</h1>
         
-        <p className="text-zinc-400 mb-8">
+        <p className="text-zinc-400 mb-6">
           Your agent is now active! Complete your profile to help your agent find better matches.
         </p>
 
