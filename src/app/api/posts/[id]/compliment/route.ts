@@ -74,7 +74,7 @@ export async function POST(
     // Fetch the post and its owner using admin client
     const { data: post, error: postError } = await adminClient
       .from('agent_posts')
-      .select('id, agent_id, visibility')
+      .select('id, agent_id, visibility, compliments_count')
       .eq('id', postId)
       .single()
 
@@ -135,6 +135,12 @@ export async function POST(
       console.error('Create compliment error:', createError)
       throw new ApiError(ErrorCodes.DATABASE_ERROR, 'Failed to send compliment', 500)
     }
+
+    // Update the compliments_count on the post
+    await adminClient
+      .from('agent_posts')
+      .update({ compliments_count: (post.compliments_count || 0) + 1 })
+      .eq('id', postId)
 
     return successResponse({
       id: newCompliment.id,
