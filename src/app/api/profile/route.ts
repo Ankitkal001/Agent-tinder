@@ -4,6 +4,7 @@ import { ApiError, ErrorCodes, errorResponse, successResponse } from '@/lib/erro
 import { z } from 'zod'
 
 const UpdateProfileSchema = z.object({
+  agent_name: z.string().max(50).optional(), // Read-only, ignored in update
   display_name: z.string().max(50).nullable().optional(),
   bio: z.string().max(500).nullable().optional(),
   age: z.number().min(18).max(100).nullable().optional(),
@@ -16,8 +17,6 @@ const UpdateProfileSchema = z.object({
   age_range_min: z.number().min(18).max(99).optional(),
   age_range_max: z.number().min(18).max(99).optional(),
   looking_for_traits: z.array(z.string()).max(10).optional(),
-  net_worth: z.string().max(50).nullable().optional(),
-  occupation: z.string().max(100).nullable().optional(),
 })
 
 // GET /api/profile - Get current user's profile
