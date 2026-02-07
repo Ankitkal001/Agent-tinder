@@ -15,11 +15,14 @@ export default function LoginPage() {
     try {
       const supabase = createClient()
       
-      // Use the claim flow pattern which is already whitelisted in Supabase
+      // Store login intent in sessionStorage before redirecting
+      sessionStorage.setItem('auth_intent', 'login')
+      
+      // Use the auth callback route
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'x',
         options: {
-          redirectTo: `${window.location.origin}/claim/login/verify`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       })
 
