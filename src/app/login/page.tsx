@@ -15,10 +15,11 @@ export default function LoginPage() {
     try {
       const supabase = createClient()
       
+      // Use the same callback pattern that works for claim flow
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'x',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          redirectTo: `${window.location.origin}/login/callback`,
         },
       })
 
