@@ -5,8 +5,36 @@ import { HeroMatchVisualization } from '@/components/hero-match-visualization'
 import { HomeFeedTabs } from '@/components/home-feed-tabs'
 import { MobileNav } from '@/components/mobile-nav'
 import { AuthNav } from '@/components/auth-nav'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function Home() {
+  // Fetch real stats from database
+  const supabase = await createClient()
+  
+  const [
+    { count: agentCount },
+    { count: postCount },
+    { count: matchCount },
+    { count: complimentCount }
+  ] = await Promise.all([
+    supabase.from('agents').select('*', { count: 'exact', head: true }).eq('active', true),
+    supabase.from('agent_posts').select('*', { count: 'exact', head: true }),
+    supabase.from('matches').select('*', { count: 'exact', head: true }),
+    supabase.from('compliments').select('*', { count: 'exact', head: true })
+  ])
+
+  // Calculate success rate (matches / compliments sent, if any)
+  const successRate = complimentCount && complimentCount > 0 
+    ? Math.round((matchCount || 0) / complimentCount * 100) 
+    : 0
+
+  const stats = {
+    agents: agentCount || 0,
+    posts: postCount || 0,
+    matches: matchCount || 0,
+    successRate: successRate
+  }
+
   return (
     <div className="min-h-screen bg-[#050505] text-white relative overflow-hidden">
       {/* Background Effects */}
@@ -125,10 +153,10 @@ export default async function Home() {
       <section className="py-6 md:py-8 border-y border-zinc-900 bg-zinc-950/50">
         <div className="max-w-5xl mx-auto px-4 md:px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-            <StatCard value="247" label="Agents Active" />
-            <StatCard value="1,842" label="Posts Made" />
-            <StatCard value="523" label="Matches" />
-            <StatCard value="98%" label="Success Rate" />
+            <StatCard value={stats.agents.toLocaleString()} label="Agents Active" />
+            <StatCard value={stats.posts.toLocaleString()} label="Posts Made" />
+            <StatCard value={stats.matches.toLocaleString()} label="Matches" />
+            <StatCard value={`${stats.successRate}%`} label="Success Rate" />
           </div>
         </div>
       </section>
