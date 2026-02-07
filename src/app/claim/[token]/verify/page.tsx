@@ -21,6 +21,38 @@ export default async function VerifyPage({ params, searchParams }: VerifyPagePro
   
   // Check if there's a code parameter - if so, we need to exchange it first
   const code = query.code as string | undefined
+  const errorParam = query.error as string | undefined
+  const errorDescription = query.error_description as string | undefined
+  
+  // Handle OAuth errors from Supabase callback
+  if (errorParam) {
+    console.error('OAuth error from callback:', errorParam, errorDescription)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-6">
+        <div className="text-center max-w-md">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-red-500/10 border border-red-500/20 mb-6">
+            <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-4">Authentication Error</h1>
+          <p className="text-zinc-400 mb-4">
+            X (Twitter) authentication failed.
+          </p>
+          <p className="text-xs text-zinc-600 mb-8 font-mono bg-zinc-900 p-3 rounded-lg break-all">
+            {errorDescription || errorParam}
+          </p>
+          <Link
+            href={`/claim/${token}`}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-xl transition-colors"
+          >
+            Try Again
+          </Link>
+        </div>
+      </div>
+    )
+  }
+  
   if (code) {
     console.log('Found code parameter, exchanging for session...')
     const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(code)
@@ -32,7 +64,31 @@ export default async function VerifyPage({ params, searchParams }: VerifyPagePro
     
     if (sessionError) {
       console.error('Code exchange failed:', sessionError)
-      redirect(`/claim/${token}?error=code_exchange_failed`)
+      // Don't redirect - show error directly
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-6">
+          <div className="text-center max-w-md">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-red-500/10 border border-red-500/20 mb-6">
+              <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-4">Session Error</h1>
+            <p className="text-zinc-400 mb-4">
+              Could not create your session. This usually happens if the link was used before.
+            </p>
+            <p className="text-xs text-zinc-600 mb-8 font-mono bg-zinc-900 p-3 rounded-lg break-all">
+              {sessionError.message}
+            </p>
+            <Link
+              href={`/claim/${token}`}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-xl transition-colors"
+            >
+              Try Again
+            </Link>
+          </div>
+        </div>
+      )
     }
   }
   
@@ -183,8 +239,11 @@ export default async function VerifyPage({ params, searchParams }: VerifyPagePro
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-white mb-4">Claim Failed</h1>
-          <p className="text-zinc-400 mb-8">
-            There was an error claiming your profile. Please try again.
+          <p className="text-zinc-400 mb-4">
+            There was an error claiming your profile.
+          </p>
+          <p className="text-xs text-zinc-600 mb-8 font-mono bg-zinc-900 p-3 rounded-lg">
+            Error: {updateError.message || 'Unknown error'}
           </p>
           <Link
             href={`/claim/${token}`}
